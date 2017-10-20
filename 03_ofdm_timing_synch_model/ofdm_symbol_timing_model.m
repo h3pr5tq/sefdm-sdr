@@ -13,10 +13,8 @@
 % Исходные данные
 
 % Добавление путей к написанным функциям
-path(path, '../common/');
-path(path, '../ofdm_phy_802_11a/');
-path(path, '../graph/');
-path(path, './using_functions/');
+path(path, '../02_ofdm_phy_802_11a_model/ofdm_phy_802_11a/');
+path(path, './functions/');
 
 len_pckt   = 10;
 N_inf_sbcr = 48;
@@ -29,7 +27,7 @@ time_offset = 200;
 
 % Для определения начала OFDM-символа пакета
 % (взаимная корреляция)
-t = Generate_LongSymbols; % с ним коррелируем
+[~, t] = GenerateLTS('Rx'); % с ним коррелируем
 
 %%
 % Моделирование ...

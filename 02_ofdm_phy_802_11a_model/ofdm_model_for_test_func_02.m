@@ -18,36 +18,14 @@ N_iter     = 1e4; % кол-во итераций для получения ма�
 % Моделирование ...
 
 % Добавление путей к написанным функциям
-path(path, '../common/');
-path(path, '../ofdm_phy_802_11a/');
+path(path, './ofdm_phy_802_11a/');
 
 % Генерируем информацию
 tx_bit = randi([0 1], 1, N_bit);
 
-% BPSK
-tx_bpsk_sym = complex( zeros(1, N_bit) );
-tx_bpsk_sym(tx_bit == 1) = -1 + 1i * 0;
-tx_bpsk_sym(tx_bit == 0) = +1 + 1i * 0;
-
-% IFFT ~~802.11a
-tx_ofdm_stream = Generate_OFDMSymbols( tx_bpsk_sym );
-
-% (Енергия бита полезного сигнала)
-% (для BER графика)
-Es = sum( abs(tx_ofdm_stream) .^ 2 ) / length(tx_ofdm_stream);
-Eb = 64 * Es / 52;
-
-% Добавление GI
-tx_ofdm_stream = Add_GI(tx_ofdm_stream);
-
-% Добавление преамбулы (Short and Long Symbols)
-ShortTrainingSymbols = Generate_ShortSymbols;
-LongTrainingSymbols  = Generate_LongSymbols;
-prmbl = [ShortTrainingSymbols, ...
-         LongTrainingSymbols(end - 32 + 1 : end), ... % Длинный GI (32 отсчёта)
-         LongTrainingSymbols];
-
-tx_ofdm_stream = [prmbl, tx_ofdm_stream];
+% OFDM Tx (передатчик)
+[tx_ofdm_stream, ...
+        prmbl, Eb] = OFDM_tx( tx_bit );
 
 % Канал с АБГШ, OFDM Rx, Демодуляция
 N_err_bit = zeros(1, length(EbNo));

@@ -40,11 +40,9 @@ function [ tx_ofdm_stream, ...
         tx_ofdm_stream = Add_GI(tx_ofdm_stream);
 
         % Добавление преамбулы (Short and Long Symbols)
-        ShortTrainingSymbols = Generate_ShortSymbols;
-        LongTrainingSymbols  = Generate_LongSymbols;
-        prmbl = [ShortTrainingSymbols, ...
-                 LongTrainingSymbols(end - 32 + 1 : end), ... % Длинный GI (32 отсчёта)
-                 LongTrainingSymbols];
+        ShortTrainingSymbols = GenerateSTS('Rx');
+        LongTrainingSymbols  = GenerateLTS('Rx');
+        prmbl = [ShortTrainingSymbols, LongTrainingSymbols];
 
         tx_ofdm_stream = [prmbl, tx_ofdm_stream];
         

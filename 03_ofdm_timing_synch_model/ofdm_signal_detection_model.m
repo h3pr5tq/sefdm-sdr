@@ -9,9 +9,8 @@
 % И С Х О Д Н Ы Е   Д А Н Н Ы Е
 
 % Добавление путей к написанным функциям
-path(path, '../common/');
-path(path, '../ofdm_phy_802_11a/');
-path(path, './using_functions/');
+path(path, '../02_ofdm_phy_802_11a_model/ofdm_phy_802_11a/');
+path(path, './functions/');
 
 len_pckt   = 10;
 N_inf_sbcr = 48;
