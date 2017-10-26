@@ -13,16 +13,16 @@ N_bit        = N_ofdm_sym * N_subcarrier;
 Fd           = 10 * 10^6;
 
 window_mode = 'no_window_overlap'; % 'window_overlap' or 'no_window_overlap' // параметр ПРЕАМБУЛЫ
-graph_mode  = 'no_display'; % 'dispaly' or 'no_display'
+graph_mode  = 'display'; % 'dispaly' or 'no_display'
 
-N_iter      = 1e3; % кол-во итераций для накопления статистики
-EbNo        = 0 : 5 : 10; % дБ
+N_iter      = 1e0; % кол-во итераций для накопления статистики
+EbNo        = 10 : -5 : 0; % дБ
 time_offset = 200;
-deltaF      = 0 : 50 * 10^3 : 100 * 10^3; % Гц, частотная отстройка
+deltaF      = 0 ;%: 50 * 10^3 : 100 * 10^3; % Гц, частотная отстройка
 
 % Алгоритм обнаружения
 L_detection = 64; % размер окна суммирования
-D_s = 16; % длина одного STS
+D_s = 64; % длина одного STS
 sig_detection_threshold = 0.15; % надо подбирать в зависимости от Eb/No
 
 
@@ -71,8 +71,8 @@ for k = 1 : N_iter
 
 		for i = 1 : length(EbNo)
 
-			No = Eb / ( 10^(EbNo(i) / 10) );
-% 			No = 0; % minus AWGN
+% 			No = Eb / ( 10^(EbNo(i) / 10) );
+			No = 0; % minus AWGN
 
 			rxSig = [         sqrt(No / 2) * randn(1, time_offset)   + 1i * sqrt(No / 2) * randn(1, time_offset), ...
 					  txSig + sqrt(No / 2) * randn(1, length(txSig)) + 1i * sqrt(No / 2) * randn(1, length(txSig)), ...

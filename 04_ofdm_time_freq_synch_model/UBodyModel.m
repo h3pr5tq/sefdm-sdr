@@ -6,6 +6,7 @@
 % >> Исследуем корреляционные свойства С/A-кодов
 
 close all;
+path(path, '../02_ofdm_phy_802_11a_model/ofdm_phy_802_11a/');
 
 % Параметры:
 Fd         = 5 * 10^6; % частота дискретизации
@@ -14,8 +15,8 @@ Nf         = 201; % кол-во частот для которых строим 
 
 % Принимаемый сигнал и эталон с которым коррелируем
 [LTS, oneLTS] = GenerateLTS('Rx');
-Sig1 = oneLTS;
-Sig2 = oneLTS;
+Sig1 = oneLTS(1:32);
+Sig2 = oneLTS(1:32);
 
 CorrLen = length(Sig1) + length(Sig2) - 1;
 

@@ -2,8 +2,8 @@
 % 
 
 Fd = 10 * 10^6;
-N_sample = 5 * 64;
-deltaF = 1000; % Гц
+N_sample = 20 * 64;
+deltaF = 2000; % Гц
 
 bpsk_data = ones(1, N_sample);
 

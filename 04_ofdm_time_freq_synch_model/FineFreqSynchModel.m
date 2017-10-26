@@ -19,17 +19,17 @@ Fd           = 10 * 10^6;
 
 window_mode = 'no_window_overlap'; % 'window_overlap' or 'no_window_overlap' // параметр ПРЕАМБУЛЫ
 
-N_iter      = 1e3; % кол-во итераций для накопления статистики
+N_iter      = 1e1; % кол-во итераций для накопления статистики
 EbNo        = 0 : 5 : 10; % дБ
 time_offset = 200;
 % Для -0.5 <= e <= 0.5 верхняя F в Гц будет 78125 Гц (Перевод из "e" в Гц: e*Fd/N_fft)
 deltaF      = [0, 5 * 10^3, 15 * 10^3, 50 * 10^3]; % Гц, частотная отстройка УЖЕ ПОСЛЕ ПЕРВИЧНОЙ КОМПЕНСАЦИИ
 
-% Алгоритм CFS
-% Величина (L_cfs + D_s) определяет размер окна, по которой находим FFO
+% Алгоритм FFS
+% Величина (L_ffs + D_ffs) определяет размер окна, по которой находим FFO
 % !!! Диапазон оценки определяется D_s: | e == deltfaF / (1/Tofdm) | <= Nfft / (2 * D_s)
-L_cfs = 64; % размер окна суммирования == усреднения в данном случае, определяет точность
-D_s = 64; % длина одного STS == определяет возможный диапазон частотной отстройки
+L_ffs = 64; % размер окна суммирования == усреднения в данном случае, определяет точность
+D_ffs = 64; % длина одного STS == определяет возможный диапазон частотной отстройки
 startAlgorithmSample = time_offset + 1; % отсчёт с которого стартует алгоритм FFS
 roundToInteger = 'no'; % 'yes' or 'no' округлять до целого в сторону нуля или нет ?? МБ ВАЩЕ НАФИГ ???
 
@@ -87,7 +87,7 @@ for k = 1 : N_iter
 			rxSig = rxSig .* exp(1i * 2 * pi * deltaF(j) * (1 : length(rxSig)) / Fd);
 
 			% Fine Freq Synch
-			estFFO = FreqSynch( rxSig, L_cfs, D_s, startAlgorithmSample, roundToInteger);
+			estFFO = FreqSynch( rxSig, L_ffs, D_ffs, startAlgorithmSample, roundToInteger);
 
 			estFFO_3d(k, j, i) = estFFO;
 
@@ -103,12 +103,12 @@ end
 fprintf('\nИспользуются:\n');
 fprintf('  N_fft          = %d\n', N_subcarrier);
 fprintf('  F_d            = %d Гц\n', Fd);
-fprintf('  L_cfs          = %d (размер окна суммирования - определяет точность)\n', L_cfs);
-fprintf('  D_s            = %d (величина сдвига - определяет диапазон)\n\n', D_s);
+fprintf('  L_cfs          = %d (размер окна суммирования - определяет точность)\n', L_ffs);
+fprintf('  D_s            = %d (величина сдвига - определяет диапазон)\n\n', D_ffs);
 fprintf('  deltaF_subcarr = %d Гц (расстояние между поднесущими)\n\n', Fd / N_subcarrier);
 fprintf('Максимально возможная оценка частотной остройки при данных параметрах следующая:\n');
-fprintf('e      = %.3f (относительная частотная отстройка)\n', N_subcarrier / (2 * D_s));
-fprintf('deltaF = %.3f Гц (частотная отстройка)\n', Fd / (2 * D_s));
+fprintf('e      = %.3f (относительная частотная отстройка)\n', N_subcarrier / (2 * D_ffs));
+fprintf('deltaF = %.3f Гц (частотная отстройка)\n', Fd / (2 * D_ffs));
 
 fprintf('Перевод из "e" в Гц: e*Fd/N_fft == e*%.2f\n\n', Fd / N_subcarrier);
 
