@@ -4,9 +4,9 @@
 
 %%
 %
-filename = 'rx_prmbl_5000_3.dat';
-firstComplexSampleNo = 1.2 * 10^7;
-endComplexSampleNo   = 2 * 10^7;
+filename = 'rx_randi_20ofdm_13.dat';
+firstComplexSampleNo = 1.6 * 10^7;
+endComplexSampleNo   = 1.6998 * 10^7;
 envelope_graph = 'no_display'; % 'display' or 'no_display'
 
 filename_original = [ '../Signals/RxBaseband_ComplexFloat32_bin/', ...
