@@ -1,4 +1,4 @@
-function [ inf, pilots ] = Constellate_From_OFDMSymbols( OFDMSymS )
+function [ inf, pilots, noNullSubcarrier ] = Constellate_From_OFDMSymbols( OFDMSymS )
 % Извлекает модуляционные символы (частотная область)
 % из входного потока OFDM-символов (во временной области)
 %
@@ -16,12 +16,15 @@ function [ inf, pilots ] = Constellate_From_OFDMSymbols( OFDMSymS )
 % out:
 %   @inf - массив-строка (поток) с модуляционными информационными символами
 %   @pilots - массив-строка (поток) с модуляционными пилотными символами
+%   @noNullSubcarrier - массив-строка (поток) с модуляционными символами (52 ненулевых поднесущих);
+%     noNullSubcarrier содержит @inf и @pilots
 %       
         N_fft = 64; % Количество комплексных чисел в одном OFDM-символе
         N_OFDMSymS = length(OFDMSymS) / N_fft; % Кол-во OFDM-символов
               
-        inf    = zeros(1, 48 * N_OFDMSymS);
-        pilots = zeros(1,  4 * N_OFDMSymS);
+        inf              = zeros(1, 48 * N_OFDMSymS);
+        pilots           = zeros(1,  4 * N_OFDMSymS);
+		noNullSubcarrier = zeros(1, 52 * N_OFDMSymS);
 
         for i = 0 : N_OFDMSymS - 1
                 
@@ -51,6 +54,9 @@ function [ inf, pilots ] = Constellate_From_OFDMSymbols( OFDMSymS )
 
                 inf   ( i * 48 + (1 : 48) ) = inf_i;
                 pilots( i *  4 + (1 :  4) ) = pilots_i;
+
+				% Извлекаем 52 символа (информационные и пилотные поднесущие)
+				noNullSubcarrier( i * 52 + (1 : 52) ) = [ out_fft64(2 : 27), out_fft64(39 : 64) ];
                 
         end
                     

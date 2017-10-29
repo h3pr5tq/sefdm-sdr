@@ -19,12 +19,12 @@ N_bit        = N_ofdm_sym * N_subcarrier;
 Fd           = 10 * 10^6;
 
 window_mode = 'no_window_overlap'; % 'window_overlap' or 'no_window_overlap' // параметр ПРЕАМБУЛЫ
-graph_mode  = 'display'; % 'dispaly' or 'no_display'
+graph_mode  = 'no_display'; % 'dispaly' or 'no_display'
 
-N_iter      = 1e3; % кол-во итераций для накопления статистики
-EbNo        = 0 : 5 : 10; % дБ
+N_iter      = 1e4; % кол-во итераций для накопления статистики
+EbNo        = 0 : 2 : 10; % дБ
 time_offset = 200;
-deltaF      = [0, 1 * 10^3, 5 * 10^3, 10 * 10^3]; % Гц, частотная отстройка
+deltaF      = [0, 1 * 10^3, 5 * 10^3, 10 * 10^3, 15 * 10^3]; % Гц, частотная отстройка
 % deltaF = 50 * 10^3;
 
 % Алгоритм FTS

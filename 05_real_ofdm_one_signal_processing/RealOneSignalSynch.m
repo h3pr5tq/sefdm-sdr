@@ -16,20 +16,20 @@
 
 
 %% П А Р А М Е Т Р Ы
-% close all;
+close all;
 path(path, './functions/');
 path(path, '../02_ofdm_phy_802_11a_model/ofdm_phy_802_11a/');
 path(path, '../04_ofdm_time_freq_synch_model/functions/');
 
-filename = '../Signals/RxBaseband_Truncate_ComlexFloat32_bin/rx_tr_randi_20ofdm_13.dat';
+filename = '../Signals/RxBaseband_Truncate_ComlexFloat32_bin/rx_tr_randi_20ofdm_8.dat';
 
 N_subcarrier = 64;
 Fd           = 10 * 10^6;
 
 % Обрезка файла
 truncate_mode = 'no_truncate'; % 'truncate' or 'no_truncate'
-firstComplexSampleNo = 8 * 10^5;
-endComplexSampleNo   = 8.5 * 10^5;
+firstComplexSampleNo = 0 * 10^5 + 1;
+endComplexSampleNo   = 6.765 * 10^5;
 
 % Рижим обработки после синхронизации (демодуляция)
 processing_mode = 'payload'; % 'payload' - демодуляция только полезной нагрузки; 'preamble' - демодуляция только преамбулы
@@ -50,7 +50,7 @@ cfs_mode = 'no_make'; %'make' or 'no_make'
 %% Алгоритм Signal Detection
 L_detection = 144; % размер окна суммирования
 D_detection = 16; % длина одного STS
-sig_detection_threshold = 0.95; % надо подбирать
+sig_detection_threshold = 0.77; % надо подбирать
 
 %% Алгоритм Coarse Time Synch
 L_cts = 144; % размер окна суммирования
@@ -163,32 +163,54 @@ end
 clear ftsMetric;
 
 
-%% Phase Offset Compensation using Pilots (== простенький эквалайзер)
-% Сдвиг фазы сигнала связан с набегом частоты до компенсации + фазовый сдвиг между Tx и Rx колебаниями осцилляторов +
-% + неидельное положение окна FFT + ещё мб что-то
+%% Equalizer + Phase Offset Compensation using Pilots (== простенький эквалайзер)
+% Эквалайзер выполняет оценку канала (также устраняет/учитывает фазовый сдвиг между Tx и Rx колебаниями осцилляторов) +
+% + Компенсация фазового смещения возникающего из-за неидеальной FreqSynch (residual freq offset)
+
+rxTwoLTS = rxSig(estFTO : estFTO + 128 - 1);
+channelFreqResponse  = ChannelEstimationByLTS( rxTwoLTS ); % оценка канала
+
 if strcmp(processing_mode, 'preamble')
-	
-	TwoLTS = rxSig(estFTO : estFTO + 128 - 1);
-	estPO  = PhaseSynchByLTS( TwoLTS );
 
-	bpskBeforeCompensation = [ Constellate_From_LTS(TwoLTS(1 : 64)), ...
-							   Constellate_From_LTS(TwoLTS(65 : 128)) ];
+	bpskBeforeCompensation = [ Constellate_From_LTS(rxTwoLTS(1 : 64)), ...
+							   Constellate_From_LTS(rxTwoLTS(65 : 128)) ];
 
-	bpskAfterCompensation  = bpskBeforeCompensation * exp(-1i * estPO);
+	% Компенсируем влияние канала
+	bpskAfterCompensation(1 : 52)   = bpskBeforeCompensation(1 : 52)   ./ channelFreqResponse;
+	bpskAfterCompensation(53 : 104) = bpskBeforeCompensation(53 : 104) ./ channelFreqResponse;
+
+	% Компенсируем PO для первого LTS (PO для каждого последующего OFDM-символа становится больше)
+	estPO  = PhaseSynchByLTS( bpskAfterCompensation(1 : 52) ); % оценка phase offset из-за residual freq offset
+	bpskAfterCompensation(1 : 52) = bpskAfterCompensation(1 : 52)* exp(-1i * estPO); % компенсируем phase offset
+
+	% Компенсируем PO для второго LTS
+	estPO  = PhaseSynchByLTS( bpskAfterCompensation(53 : 104) ); % оценка phase offset из-за residual freq offset
+	bpskAfterCompensation(53 : 104) = bpskAfterCompensation(53 : 104)* exp(-1i * estPO); % компенсируем phase offset
 
 else
 	
 	payloadOfOnePacket = rxSig(estFTO + 128 : estFTO + 128 + N_ofdm_sym * 80 - 1); % выделили payload из сигнала
 	payloadOfOnePacket = Del_GI( payloadOfOnePacket ); % удаление GI (предполагает идеальную FTS)
-	[bpskBeforeCompensation, pilots] = Constellate_From_OFDMSymbols( payloadOfOnePacket ); % 802.11a FFT
+	[bpskBeforeCompensation, ~, noNullSubcarrier] = Constellate_From_OFDMSymbols( payloadOfOnePacket ); % 802.11a FFT
 
-	bpskAfterCompensation = zeros(1, length(bpskBeforeCompensation));
+	bpskAfterCompensation  = zeros(1, length(bpskBeforeCompensation));
 	for i = 0 : N_ofdm_sym - 1
 
-		estPO = PhaseSynchByPilots( pilots(1 + i * 4 : 4 + i * 4) );
+		% Вылелили кусок соответсвующий одному OFDM-символу
+		noNullSubcarrierSegment = noNullSubcarrier(1 + i * 52 : 52 + i * 52);
 
-		bpskAfterCompensation(1 + i * 48 : 48 + i * 48) = ...
-			bpskBeforeCompensation(1 + i * 48 : 48 + i * 48) * exp(-1i * estPO);
+		% Значение инф. поднесущих до каких либо компенсаций (канала, остаточной частотной отстройки)
+		% (для графика)
+		[bpskAfterCompensation(1 + i * 48 : 48 + i * 48), ~] = AllocateInfAndPilotSubcarrier( noNullSubcarrierSegment );
+
+		% Компенсируем влияние канала
+		noNullSubcarrierSegment = noNullSubcarrierSegment ./ channelFreqResponse;
+
+		[infSubcarrier, pilotSubcarrier] = AllocateInfAndPilotSubcarrier( noNullSubcarrierSegment );
+
+		% Оценка фазового смещения из-за residual freq offset
+		estPO = PhaseSynchByPilots( pilotSubcarrier );
+		bpskAfterCompensation(1 + i * 48 : 48 + i * 48) = infSubcarrier * exp(-1i * estPO); % компенсируем
 
 	end
 
@@ -196,10 +218,10 @@ end
 
 if strcmp(ps_graph_mode, 'display')
 	if strcmp(processing_mode, 'preamble')
-		scatterplot(bpskBeforeCompensation); grid on; title('Before Phase Offset Compensation');
-		scatterplot(bpskAfterCompensation);  grid on; title('After Phase Offset Compensation');
+		scatterplot(bpskBeforeCompensation); grid on; title({'Before Channel and', 'Residual Freq Offset Compensation'});
+		scatterplot(bpskAfterCompensation);  grid on; title({'After Channel and', 'Residual Freq Offset Compensation'});
 	else
-		Graph_PhaseSynch(bpskBeforeCompensation,  bpskAfterCompensation, N_ofdm_sym);
+		Graph_ChannelAndResidualFOCompensation(bpskBeforeCompensation, bpskAfterCompensation, N_ofdm_sym);
 	end
 end
 
@@ -211,7 +233,12 @@ if strcmp(console_mode, 'display')
 	fprintf('  Файл:        %s\n', filename);
 	fprintf('  Отсчёты:     с %d по %d (включительно)\n', firstComplexSampleNo, endComplexSampleNo);
 	fprintf('  Fd:          %d Гц\n', Fd);
-	fprintf('  Nfft:        %d  // кол-во поднесущих\n\n', N_subcarrier);
+	fprintf('  Nfft:        %d  // кол-во поднесущих\n', N_subcarrier);
+	if strcmp(processing_mode, 'payload')
+		fprintf('  N_ofdm_sym:  %d  // кол-во OFDM-символов в payload\n\n', N_ofdm_sym);
+	else
+		fprintf('\n');
+	end
 
 	fprintf('  Алгоритм Signal Detection\n');
 	fprintf('    L:         %-4d  // окно суммирования\n', L_detection);

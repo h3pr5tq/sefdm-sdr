@@ -4,10 +4,12 @@
 
 %%
 %
-filename = 'rx_randi_20ofdm_13.dat';
-firstComplexSampleNo = 1.6 * 10^7;
-endComplexSampleNo   = 1.6998 * 10^7;
-envelope_graph = 'no_display'; % 'display' or 'no_display'
+clear;
+
+filename = 'rx_randi_2ofdm_13.dat';
+firstComplexSampleNo = 1.455 * 10^7;
+endComplexSampleNo   = 1.4755 * 10^7;
+envelope_graph = 'display'; % 'display' or 'no_display'
 
 filename_original = [ '../Signals/RxBaseband_ComplexFloat32_bin/', ...
                       filename ];

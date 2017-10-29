@@ -1,4 +1,4 @@
-function Graph_PhaseSynch(sigBeforeCompensation,  sigAfterCompensation, N_ofdm_sym)
+function Graph_ChannelAndResidualFOCompensation(sigBeforeCompensation,  sigAfterCompensation, N_ofdm_sym)
 %
 %
 % @N_ofdm_sym - кол-во OFDM-символов в payload пакета // N_ofdm_sym > 10
@@ -31,7 +31,7 @@ function Graph_PhaseSynch(sigBeforeCompensation,  sigAfterCompensation, N_ofdm_s
 	grid on;
 	xlabel('In-Phase');
 	ylabel('Quadrature');
-	title('Before Phase Offset Compensation')
+	title({'Before Channel and', 'Residual Freq Offset Compensation'});
 	legend('Preamble + First 5 OFDM-syms', 'Central OFDM-syms', 'Last 5 OFDM-syms');
 
 
@@ -61,7 +61,7 @@ function Graph_PhaseSynch(sigBeforeCompensation,  sigAfterCompensation, N_ofdm_s
 	grid on;
 	xlabel('In-Phase');
 	ylabel('Quadrature');
-	title('After Phase Offset Compensation')
+	title({'After Channel and', 'Residual Freq Offset Compensation'});
 	legend('Preamble + First 5 OFDM-syms', 'Central OFDM-syms', 'Last 5 OFDM-syms');
 
 end
