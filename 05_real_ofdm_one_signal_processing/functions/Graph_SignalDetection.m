@@ -7,7 +7,7 @@ function Graph_SignalDetection( metric, signalDetectionSample, firstComplexSampl
 	figure;
 	hold on;
 	plot(O_sample, metric);
-	stem(signalDetectionSample + firstComplexSampleNo - 1, 1.2); % отсчёт, на котором обнаружили сигнал
+	stem( signalDetectionSample + firstComplexSampleNo - 1, 1.2*ones(1, length(signalDetectionSample)) ); % отсчёт, на котором обнаружили сигнал
 	hold off;
 	grid on;
 	xlim([O_sample(1), O_sample(end)]);

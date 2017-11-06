@@ -12,7 +12,7 @@
 clear;
 
 % filename = '../Signals/RxBaseband_ComplexFloat32_bin/rx_randi_2ofdm_13.dat';
-filename = '../Signals/RxBaseband_Truncate_ComlexFloat32_bin/rx_tr_randi_1000ofdm_10.dat';
+filename = '../Signals/RxBaseband_Truncate_ComlexFloat32_bin/rx_tr_randi_20ofdm_11.dat';
 
 
 %%

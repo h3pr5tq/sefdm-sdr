@@ -21,7 +21,7 @@ path(path, './functions/');
 path(path, '../02_ofdm_phy_802_11a_model/ofdm_phy_802_11a/');
 path(path, '../04_ofdm_time_freq_synch_model/functions/');
 
-filename = '../Signals/RxBaseband_Truncate_ComlexFloat32_bin/rx_tr_randi_20ofdm_8.dat';
+filename = '../Signals/RxBaseband_Truncate_ComlexFloat32_bin/rx_tr_randi_1000ofdm_10.dat';
 
 N_subcarrier = 64;
 Fd           = 10 * 10^6;
@@ -33,7 +33,7 @@ endComplexSampleNo   = 6.765 * 10^5;
 
 % Рижим обработки после синхронизации (демодуляция)
 processing_mode = 'payload'; % 'payload' - демодуляция только полезной нагрузки; 'preamble' - демодуляция только преамбулы
-N_ofdm_sym = 20; % кол-во OFDM-символов в пакете (не считая преамбулу)
+N_ofdm_sym = 1000; % кол-во OFDM-символов в пакете (не считая преамбулу)
 
 % Вывод результатов обработки в консоль
 console_mode = 'display'; % 'display' or 'no_display' 
@@ -42,7 +42,7 @@ console_mode = 'display'; % 'display' or 'no_display'
 detection_graph_mode = 'display';
 cts_graph_mode = 'display';
 fts_graph_mode = 'display';
-ps_graph_mode = 'display';
+constellation_graph_mode = 'display';
 
 % Делать ли Coarse Freq Synch или нет (выполняется только Fine Freq Synch)
 cfs_mode = 'no_make'; %'make' or 'no_make'
@@ -50,7 +50,7 @@ cfs_mode = 'no_make'; %'make' or 'no_make'
 %% Алгоритм Signal Detection
 L_detection = 144; % размер окна суммирования
 D_detection = 16; % длина одного STS
-sig_detection_threshold = 0.77; % надо подбирать
+sig_detection_threshold = 0.93; % надо подбирать
 
 %% Алгоритм Coarse Time Synch
 L_cts = 144; % размер окна суммирования
@@ -216,7 +216,7 @@ else
 
 end
 
-if strcmp(ps_graph_mode, 'display')
+if strcmp(constellation_graph_mode, 'display')
 	if strcmp(processing_mode, 'preamble')
 		scatterplot(bpskBeforeCompensation); grid on; title({'Before Channel and', 'Residual Freq Offset Compensation'});
 		scatterplot(bpskAfterCompensation);  grid on; title({'After Channel and', 'Residual Freq Offset Compensation'});

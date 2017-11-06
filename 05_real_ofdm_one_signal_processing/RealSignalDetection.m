@@ -1,28 +1,30 @@
 %%
 % Real Signal Detection
 %
-% По графику можно обратить внимание, скорее всего, на работа AGC модуля:
-% автокорреляция шума довольно большая (из-за AGC, а не из-за маленькой Eb/No, надо аккуратнее с подбором порога.
-% !!!! НЕЕ фигня. Просто нормируем на малую величину, поэтому такое получаем. AGC не причём
+% Фиговая работа алгоритма связана с присутсвием постоянной составляющей в сигнале!!!
+% DC-offset! Фиксится, например, ФВЧ. Однако, если присутсвует сильная помеха,
+% то работаспособность алгоритма также резко падает 
+% Надо мб другой алгоритм
 %
 
 %%
 %
 
 path(path, '../04_ofdm_time_freq_synch_model/functions/');
+path(path, './functions/');
 
 %%
 %
-filename = '../Signals/RxBaseband_Truncate_ComlexFloat32_bin/rx_tr_prmbl_5000_3.dat';
+filename = '../Signals/RxBaseband_Truncate_ComlexFloat32_bin/rx_tr_randi_20ofdm_11.dat';
 
 truncate_mode = 'truncate'; % 'truncate' or 'no_truncate'
-firstComplexSampleNo = 8 * 10^5;
-endComplexSampleNo   = 8.5 * 10^5;
+firstComplexSampleNo = 100e3;
+endComplexSampleNo   = 105e3;
 
 % Алгоритм обнаружения
 L_detection = 144; % размер окна суммирования
 D_detection = 16; % длина одного STS
-sig_detection_threshold = 0.95; % надо подбирать
+sig_detection_threshold = 0.93; % надо подбирать
 
 %%
 % Обработка

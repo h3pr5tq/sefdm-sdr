@@ -3,7 +3,7 @@
 
 %%
 % Параметры
-close all;
+% close all;
 path(path, './functions/');
 path(path, '../02_ofdm_phy_802_11a_model/ofdm_phy_802_11a/');
 
@@ -13,17 +13,23 @@ N_bit        = N_ofdm_sym * N_subcarrier;
 Fd           = 10 * 10^6;
 
 window_mode = 'no_window_overlap'; % 'window_overlap' or 'no_window_overlap' // параметр ПРЕАМБУЛЫ
-graph_mode  = 'display'; % 'dispaly' or 'no_display'
+graph_mode  = 'no_display'; % 'dispaly' or 'no_display'
 
-N_iter      = 1e0; % кол-во итераций для накопления статистики
-EbNo        = 10 : -5 : 0; % дБ
+dcOffset_mode = 'no_dc_offset'; % 'dc_offset' or 'no_dc_offset', добавляем или не добавляем постоянную составляющую к rx сигналу
+dcOffset = 1 + 1i * 1; % значение постоянной составляющей для I и Q канала
+filter_mode = 'filter'; % 'no_filter' - ФВЧ не используется   or   'filter' - ФВЧ используется для удаления DC-offset
+
+awgn_mode = 'awgn'; % 'awgn' or 'no_awgn': задаём есть ли шум в канале или нет
+EbNo = [0, 5, 10]; % дБ
+
+N_iter      = 1e3; % кол-во итераций для накопления статистики
 time_offset = 200;
-deltaF      = 0 ;%: 50 * 10^3 : 100 * 10^3; % Гц, частотная отстройка
+deltaF      = [0, 10e3, 50e3] ;%: 50 * 10^3 : 100 * 10^3; % Гц, частотная отстройка
 
 % Алгоритм обнаружения
-L_detection = 64; % размер окна суммирования
-D_s = 64; % длина одного STS
-sig_detection_threshold = 0.15; % надо подбирать в зависимости от Eb/No
+L_detection = 144; % размер окна суммирования
+D_s = 16; % длина одного STS
+sig_detection_threshold = 0.25; % надо подбирать в зависимости от Eb/No
 
 
 %%
@@ -71,13 +77,36 @@ for k = 1 : N_iter
 
 		for i = 1 : length(EbNo)
 
-% 			No = Eb / ( 10^(EbNo(i) / 10) );
-			No = 0; % minus AWGN
+			if strcmp(awgn_mode, 'awgn')
+				No = Eb / ( 10^(EbNo(i) / 10) );
+			else
+				No = 0; % minus AWGN
+			end
 
 			rxSig = [         sqrt(No / 2) * randn(1, time_offset)   + 1i * sqrt(No / 2) * randn(1, time_offset), ...
 					  txSig + sqrt(No / 2) * randn(1, length(txSig)) + 1i * sqrt(No / 2) * randn(1, length(txSig)), ...
 							  sqrt(No / 2) * randn(1, time_offset) +   1i * sqrt(No / 2) * randn(1, time_offset) ];
 			rxSig = rxSig .* exp(1i * 2 * pi * deltaF(j) * (1 : length(rxSig)) / Fd);
+
+			% Добавление постоянной составляющей
+			if strcmp(dcOffset_mode, 'dc_offset')
+				rxSig = rxSig + dcOffset;
+			end
+
+			% Убиваем постоянную составляющую
+			if strcmp(filter_mode, 'filter')
+
+				% ФВЧ: Equiripple,
+				% Fs = 10e6 Hz, Fstop = 100 Hz, Fpass = 4e6 Hz,
+				% Astop = 80 dB, Apass = 1 dB
+				b = [-0.069011962933607576275996109416155377403, ...
+					 -0.24968762861092019811337650025961920619,  ...
+					  0.637401352293061496112613895093090832233, ...
+					 -0.24968762861092019811337650025961920619,  ...
+					 -0.069011962933607576275996109416155377403];
+				rxSamples = filter(b, 1, rxSamples);
+
+			end
 
 			% Signal Detection
 			[m, signalDetectionSample] = SignalDetection(rxSig, L_detection, D_s, sig_detection_threshold);
@@ -97,7 +126,9 @@ for k = 1 : N_iter
 				        ['deltaF = ', num2str(deltaF(j)), ' Hz'] });
 				legend('m', 'FirstSampleOfPreamble', 'SampleOfThresholdExcess');
 
-				input('Press Enter to resume\n\n');
+				if length(EbNo) ~= 1 && length(deltaF) ~= 1
+					input('Press Enter to resume\n\n');
+				end
 			end
 
 			signalDetectionSample_3d(k, j, i) = signalDetectionSample;
@@ -121,28 +152,31 @@ for j = 1 : length(deltaF)
 	end
 end
 
-signalDetectionSample_3d = signalDetectionSample_3d - time_offset;
-signalDetectionSample_3d(signalDetectionSample_3d == Inf) = 100;
-fprintf('\n\nЕсли значение 100, что это значит, что Обнаружитель НЕ СРАБОТАЛ\n\n');
-for j = 1 : length(deltaF)
+% Гистограммы, показывающие на каком отсчёте был превышен порог, относительно первого отсчёта преамбулы
+if length(EbNo) ~= 1 && length(deltaF) ~= 1
+	signalDetectionSample_3d = signalDetectionSample_3d - time_offset;
+	signalDetectionSample_3d(signalDetectionSample_3d == Inf) = 100;
+	fprintf('\n\nЕсли значение 100, что это значит, что Обнаружитель НЕ СРАБОТАЛ\n\n');
+	for j = 1 : length(deltaF)
 
-	figure;
+		figure;
 
-	for i = 1 : length(EbNo) 
-		
-		subplot(length(EbNo), 1, i);
-		ar_1d = reshape(signalDetectionSample_3d(:, j, i), 1, []); 
-		hist(ar_1d, min(ar_1d) : max(ar_1d));
-		xlabel('smpls');
-		title({ ['EbNo = ', num2str(EbNo(i)), ' dB'], ...
-				['deltaF = ', num2str(deltaF(j)), ' Hz'] });
-		grid on;
+		for i = 1 : length(EbNo) 
 
+			subplot(length(EbNo), 1, i);
+			ar_1d = reshape(signalDetectionSample_3d(:, j, i), 1, []); 
+			hist(ar_1d, min(ar_1d) : max(ar_1d));
+			xlabel('smpls');
+			title({ ['EbNo = ', num2str(EbNo(i)), ' dB'], ...
+					['deltaF = ', num2str(deltaF(j)), ' Hz'] });
+			grid on;
+
+		end
 	end
-end
 
-fprintf(['При отсутствии шума первый пик (если sumWindow == 144, то единтсвенный)\n', ...
-         'будет на первом отсчёте преамбулы (преамбула без перекрытия, иначе если с перекрытием,\n', ...
-         'то на втором отсчёте)\n\n']);
-fprintf(['Превышение порога случится раньше, до отсчётов относящихся к пакету/преамбуле\n', ...
-         '(насколько раньше - определяется порогом)\n\n']);
+	fprintf(['При отсутствии шума первый пик (если sumWindow == 144, то единтсвенный)\n', ...
+			 'будет на первом отсчёте преамбулы (преамбула без перекрытия, иначе если с перекрытием,\n', ...
+			 'то на втором отсчёте)\n\n']);
+	fprintf(['Превышение порога случится раньше, до отсчётов относящихся к пакету/преамбуле\n', ...
+			 '(насколько раньше - определяется порогом)\n\n']);
+end

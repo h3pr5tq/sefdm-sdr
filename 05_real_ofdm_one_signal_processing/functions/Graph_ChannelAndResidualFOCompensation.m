@@ -8,7 +8,7 @@ function Graph_ChannelAndResidualFOCompensation(sigBeforeCompensation,  sigAfter
 	% График до компенсации
 	figure;
 
-	graph = plot( real(sigBeforeCompensation(1 : 104 + 5*48)), ... преамбула + 2 первых OFDM-символа из payload
+	graph = plot( real(sigBeforeCompensation(1 : 104 + 5*48)), ... преамбула + 5 первых OFDM-символа из payload
 	              imag(sigBeforeCompensation(1 : 104 + 5*48)), ...
 	              ...
 	              real(sigBeforeCompensation(1 + 104 + 5*48 : 104 + n*48)), ...
@@ -28,17 +28,21 @@ function Graph_ChannelAndResidualFOCompensation(sigBeforeCompensation,  sigAfter
 	axes.XLim = [-axesMaxAbsVal, axesMaxAbsVal];
 	axes.YLim = [-axesMaxAbsVal, axesMaxAbsVal];
 
+	% Перемещение графиков: Передний/Задний план
+	axes.Children = [graph(1); graph(3); graph(2)];
+
 	grid on;
 	xlabel('In-Phase');
 	ylabel('Quadrature');
 	title({'Before Channel and', 'Residual Freq Offset Compensation'});
-	legend('Preamble + First 5 OFDM-syms', 'Central OFDM-syms', 'Last 5 OFDM-syms');
+	legend( [graph(1), graph(2), graph(3)], ...
+	        'Preamble + First 5 OFDM-syms', 'Central OFDM-syms', 'Last 5 OFDM-syms' );
 
 
 	% График после компенсации
 	figure;
 
-	graph = plot( real(sigAfterCompensation(1 : 104 + 5*48)), ... преамбула + 2 первых OFDM-символа из payload
+	graph = plot( real(sigAfterCompensation(1 : 104 + 5*48)), ... преамбула + 5 первых OFDM-символа из payload
 	              imag(sigAfterCompensation(1 : 104 + 5*48)), ...
 	              ...
 	              real(sigAfterCompensation(1 + 104 + 5*48 : 104 + n*48)), ...
@@ -58,11 +62,15 @@ function Graph_ChannelAndResidualFOCompensation(sigBeforeCompensation,  sigAfter
 	axes.XLim = [-axesMaxAbsVal, axesMaxAbsVal];
 	axes.YLim = [-axesMaxAbsVal, axesMaxAbsVal];
 
+	% Перемещение графиков: Передний/Задний план
+	axes.Children = [graph(1); graph(3); graph(2)];
+
 	grid on;
 	xlabel('In-Phase');
 	ylabel('Quadrature');
 	title({'After Channel and', 'Residual Freq Offset Compensation'});
-	legend('Preamble + First 5 OFDM-syms', 'Central OFDM-syms', 'Last 5 OFDM-syms');
+	legend( [graph(1), graph(2), graph(3)], ...
+	        'Preamble + First 5 OFDM-syms', 'Central OFDM-syms', 'Last 5 OFDM-syms' );
 
 end
 

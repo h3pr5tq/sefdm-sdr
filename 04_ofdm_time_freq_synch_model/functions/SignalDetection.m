@@ -1,8 +1,13 @@
-function [ detectionMetric, signalDetectionSample ] = SignalDetection( rxSamples, sumWindow, shiftSamples, threshold )
+function [ detectionMetric, signalDetectionSample ] = SignalDetection( rxSamples, sumWindow, shiftSamples, threshold)
 %
 % sumWindow - размер окна суммирования 16 - 144
 % shiftSamples - автокоррелируем со сдвинутой копией на это число отсчётов
 % threshold - порог обнаружения
+%
+% DC-offset очень сильно влияет на работу данного алгоритма детектирования. Если существует DC-offset
+% то на выходе алгоритма уровень шума будет практически на уровне всплесков-пиков от STS, что будет давать
+% ложные тревоги.
+% Тоже касается и присутствия сильной помехи
 %
 % В отсутствии шума и других фиговин первый пик (если sumWindow == 144, то единтсвенный)
 % будет на первом отсчёте преамбулы (преамбула без перекрытия, иначе если с перекрытием то на втором отсчёте)
@@ -11,7 +16,6 @@ function [ detectionMetric, signalDetectionSample ] = SignalDetection( rxSamples
 %
 % СДЕЛАЕМ ПРЕДПОЛОЖЕНИЕ В АЛГОРИТМЕ, ЧТО СИГНАЛ ЗАДЕТЕКТИМ ЗА ПЕРВЫЕ ТРИ SHORT TRAINIG SYMBOLS?? (ЗАЧЕМ?? анализируем по графикам)
 %
-
 	autoCorr    = zeros(1, length(rxSamples) - sumWindow - shiftSamples + 1);
 	localEnergy = zeros(1, length(rxSamples) - sumWindow - shiftSamples + 1);
 
