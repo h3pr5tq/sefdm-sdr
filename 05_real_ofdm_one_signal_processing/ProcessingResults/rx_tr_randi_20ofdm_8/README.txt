@@ -1,3 +1,9 @@
+Графики *AfterChannelAndResidualFOCompensation* и *BeforeChannelAndResidualFOCompensation*
+получены до фикса функции Graph_ChannelAndResidualFOCompensation(...), которая строит эти графики
+На самом деле символов преамбулы нету... Было убрано лишние смещение на 104...
+Кароче лучше поновой построить данные графики
+
+
 Тут у нас шум очень большой
 ( умножение на const = 1;
   Tx: RFgain = 0; IFgain = 20; BBgain=20;

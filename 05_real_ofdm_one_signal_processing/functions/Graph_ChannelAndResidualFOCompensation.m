@@ -3,19 +3,20 @@ function Graph_ChannelAndResidualFOCompensation(sigBeforeCompensation,  sigAfter
 %
 % @N_ofdm_sym - кол-во OFDM-символов в payload пакета // N_ofdm_sym > 10
 %
-	n = N_ofdm_sym - 5;
+	groupSize = 5; % группируем
+	n = N_ofdm_sym - groupSize;
 
 	% График до компенсации
 	figure;
 
-	graph = plot( real(sigBeforeCompensation(1 : 104 + 5*48)), ... преамбула + 5 первых OFDM-символа из payload
-	              imag(sigBeforeCompensation(1 : 104 + 5*48)), ...
+	graph = plot( real(sigBeforeCompensation(1 : groupSize*48)), ... первые groupSize OFDM-символов из payload
+	              imag(sigBeforeCompensation(1 : groupSize*48)), ...
 	              ...
-	              real(sigBeforeCompensation(1 + 104 + 5*48 : 104 + n*48)), ...
-	              imag(sigBeforeCompensation(1 + 104 + 5*48 : 104 + n*48)), ...
+	              real(sigBeforeCompensation(1 + groupSize*48 : n*48)), ...
+	              imag(sigBeforeCompensation(1 + groupSize*48 : n*48)), ...
 	              ...
-				  real(sigBeforeCompensation(1 + 104 + n*48 : end)), ... % последнии 5 OFDM-символа из payload
-	              imag(sigBeforeCompensation(1 + 104 + n*48 : end)) );
+				  real(sigBeforeCompensation(1 + n*48 : end)), ... последнии groupSize OFDM-символов из payload
+	              imag(sigBeforeCompensation(1 + n*48 : end)) );
 
 	for i = 1 : 3
 		graph(i).LineStyle = 'none';
@@ -36,20 +37,20 @@ function Graph_ChannelAndResidualFOCompensation(sigBeforeCompensation,  sigAfter
 	ylabel('Quadrature');
 	title({'Before Channel and', 'Residual Freq Offset Compensation'});
 	legend( [graph(1), graph(2), graph(3)], ...
-	        'Preamble + First 5 OFDM-syms', 'Central OFDM-syms', 'Last 5 OFDM-syms' );
+	        'First 5 OFDM-syms', 'Central OFDM-syms', 'Last 5 OFDM-syms' );
 
 
 	% График после компенсации
 	figure;
 
-	graph = plot( real(sigAfterCompensation(1 : 104 + 5*48)), ... преамбула + 5 первых OFDM-символа из payload
-	              imag(sigAfterCompensation(1 : 104 + 5*48)), ...
+	graph = plot( real(sigAfterCompensation(1 : groupSize*48)), ... первые groupSize OFDM-символов из payload
+	              imag(sigAfterCompensation(1 : groupSize*48)), ...
 	              ...
-	              real(sigAfterCompensation(1 + 104 + 5*48 : 104 + n*48)), ...
-	              imag(sigAfterCompensation(1 + 104 + 5*48 : 104 + n*48)), ...
+	              real(sigAfterCompensation(1 + groupSize*48 : n*48)), ...
+	              imag(sigAfterCompensation(1 + groupSize*48 : n*48)), ...
 	              ...
-				  real(sigAfterCompensation(1 + 104 + n*48 : end)), ... % последнии 5 OFDM-символа из payload
-	              imag(sigAfterCompensation(1 + 104 + n*48 : end)) );
+				  real(sigAfterCompensation(1 + n*48 : end)), ... последнии groupSize OFDM-символов из payload
+	              imag(sigAfterCompensation(1 + n*48 : end)) );
 
 	for i = 1 : 3
 		graph(i).LineStyle = 'none';
@@ -70,7 +71,7 @@ function Graph_ChannelAndResidualFOCompensation(sigBeforeCompensation,  sigAfter
 	ylabel('Quadrature');
 	title({'After Channel and', 'Residual Freq Offset Compensation'});
 	legend( [graph(1), graph(2), graph(3)], ...
-	        'Preamble + First 5 OFDM-syms', 'Central OFDM-syms', 'Last 5 OFDM-syms' );
+	        'First 5 OFDM-syms', 'Central OFDM-syms', 'Last 5 OFDM-syms' );
 
 end
 
