@@ -6,18 +6,21 @@
 %
 clear;
 
-filename = 'rx_randi_20ofdm_11.dat';
-firstComplexSampleNo = 3.042848 * 10^7;
-endComplexSampleNo   = 3.045014 * 10^7;
+filename = 'rx_randi_20ofdm_20000pckt_15.dat';
+firstComplexSampleNo = uint64( 1 * 10^7 );
+endComplexSampleNo   = uint64( 5.42 * 10^7 );
 envelope_graph = 'display'; % 'display' or 'no_display'
 
-filename_original = [ '../Signals/RxBaseband_ComplexFloat32_bin/', ...
+filename_original = [ './RxBaseband_ComplexFloat32_bin/', ...
                       filename ];
-filename_result   = [ '../Signals/RxBaseband_Truncate_ComlexFloat32_bin/', ...
+filename_result   = [ './RxBaseband_Truncate_ComlexFloat32_bin/', ...
                       [filename(1:3), 'tr_', filename(4 : end)] ];
 
+% filename_result   = filename_original;
+
+
 %%
-%
+
 if exist(filename_result, 'file') ~= 0
 	fprintf('"%s" is exist! Exit\n', filename_result);
 	return;

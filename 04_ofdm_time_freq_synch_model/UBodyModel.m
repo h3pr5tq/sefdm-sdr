@@ -46,14 +46,14 @@ CorrPeakIndex = length(Sig2);
 plot( Y(:, 1), Ubody(:, CorrPeakIndex) );
 xlabel('frequence, Hz');
 ylabel('ACFs(0)');
-title('Peaks of ACF (OX - freq shift)');
+title('Peaks of CF (OX - freq shift)');
 grid on;
 
 figure;
 NullDeltaFIndex = find(O_deltaF == 0); 
 plot( X(1, :), Ubody(NullDeltaFIndex, :) );
 xlabel('samples');
-title('ACF (freq shift == 0)');
+title('CF (freq shift == 0)');
 grid on;
 
 

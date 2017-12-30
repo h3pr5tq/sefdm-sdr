@@ -12,24 +12,24 @@
 clear;
 
 % filename = '../Signals/RxBaseband_ComplexFloat32_bin/rx_randi_2ofdm_13.dat';
-filename = '../Signals/RxBaseband_ComplexFloat32_bin/rx_randi_20ofdm_11.dat';
+filename = './RxBaseband_ComplexFloat32_bin/rx_randi_20ofdm_20000pckt_15.dat';
 
 
 %%
 %
 
 % % Вывести доступные файлы
-% fprintf('\n%-30s %s\n', 'FILE NAME:', 'BYTES:');
+% fprintf('\n%-50s %s\n', 'FILE NAME:', 'BYTES:');
 % file_inf = dir('../Signals/RxBaseband_ComplexFloat32_bin/');
 % for i = 1 : length(file_inf)
-% 	fprintf('%-30s %d\n', file_inf(i).name, file_inf(i).bytes);
+% 	fprintf('%-50s %d\n', file_inf(i).name, file_inf(i).bytes);
 % end
 % fprintf('\n');
 
 
 fd = fopen(filename, 'r');
 if fd == -1
-    error('File is not opened');  
+    error('File is not opened'); 
 end
 rxSig = fread(fd, [1, inf], 'float32=>double');
 rxSig = rxSig(1 : 2 : end) + 1i * rxSig(2 : 2 : end);

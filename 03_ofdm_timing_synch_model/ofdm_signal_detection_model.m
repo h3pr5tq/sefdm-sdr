@@ -16,9 +16,9 @@ len_pckt   = 10;
 N_inf_sbcr = 48;
 N_bit      = len_pckt * N_inf_sbcr;
 GI_len     = 16;
-EbNo       = 0 : 5 : 10; % дБ
+EbNo       = [2, 8]; % дБ
 
-Num_exprmnt = 1e3;
+Num_exprmnt = 1e1;
 time_offset = 200;
 
 % Для обнаружения сигнала
@@ -95,5 +95,6 @@ m__avg = m__avg ./ Num_exprmnt;
 
 %%
 % В И З У А Л И З А Ц И Я   Р Е З У Л Ь Т А Т А
-graph_signal_detection( c__,    m__,    EbNo, L, false );
-graph_signal_detection( c__avg, m__avg, EbNo, L, true  );
+% graph_signal_detection( c__,    m__,    EbNo, L, false );
+% graph_signal_detection( c__avg, m__avg, EbNo, L, true  );
+graph_signal_detection_FOR_PRESENTATION_DEL( c__,    m__,    EbNo, L, false  );
