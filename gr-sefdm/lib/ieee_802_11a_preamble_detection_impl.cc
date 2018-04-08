@@ -28,15 +28,22 @@
 namespace gr {
   namespace sefdm {
 
+    static const int  PREAMBLE_LEN = 320; // в отсчётах
+
     ieee_802_11a_preamble_detection::sptr
     ieee_802_11a_preamble_detection::make(int summation_window,
                                           int signal_offset,
                                           float detection_threshold,
                                           bool use_recursive_algorithm,
-                                          float eps)
+                                          float eps,
+                                          const std::string& tag_key,
+                                          int packet_len,
+                                          int margin)
     {
       return gnuradio::get_initial_sptr
-        (new ieee_802_11a_preamble_detection_impl(summation_window, signal_offset, detection_threshold, use_recursive_algorithm, eps));
+        (new ieee_802_11a_preamble_detection_impl(summation_window, signal_offset, detection_threshold,
+                                                  use_recursive_algorithm, eps,
+                                                  tag_key, packet_len, margin));
     }
 
     /*
@@ -46,17 +53,28 @@ namespace gr {
                                                                                int signal_offset,
                                                                                float detection_threshold,
                                                                                bool use_recursive_algorithm,
-                                                                               float eps)
+                                                                               float eps,
+                                                                               const std::string& tag_key,
+                                                                               int packet_len,
+                                                                               int margin)
       : gr::block("ieee_802_11a_preamble_detection",
               gr::io_signature::make2(2, 2, sizeof(gr_complex), sizeof(gr_complex)),
-              gr::io_signature::make2(2, 2, sizeof(gr_complex), sizeof(float))),
+              gr::io_signature::make2(1, 2, sizeof(gr_complex), sizeof(float))),
         d_summation_window(summation_window),
         d_signal_offset(signal_offset),
         d_detection_threshold(detection_threshold),
         d_use_recursive_algorithm(use_recursive_algorithm),
-        d_eps(eps)
+        d_eps(eps),
+        d_tag_key(tag_key),
+        d_packet_len_with_margin(packet_len + margin),
+        d_cntr(0),
+        d_detected_pckt_num(0)
     {
       set_history(summation_window + signal_offset);
+
+#if HANDLE_PRMBL_NEXT_WORK_CALL == 1
+      set_output_multiple(512);
+#endif
     }
 
     /*
@@ -82,32 +100,59 @@ namespace gr {
                        gr_vector_void_star &output_items)
     {
       // Buffers size: noutput_items + history() - 1 == noutput_items + L + D - 1
-      const gr_complex *in            = (const gr_complex *) input_items[0];
-      const gr_complex *without_dc_in = (const gr_complex *) input_items[1];
+      const gr_complex  *in            = (const gr_complex *) input_items[0];
+      const gr_complex  *without_dc_in = (const gr_complex *) input_items[1];
 
-      gr_complex *out = (gr_complex *) output_items[0];
-      float *detection_metric = (float *) output_items[1];
+      gr_complex  *out              = (gr_complex *) output_items[0];
+      float       *detection_metric = (float *)      output_items[1];
 
-      // Do <+signal processing+>
 
-      if (d_use_recursive_algorithm == true) {
+      // П Р Е Д П О Л А Г А Е М   Ч Т О   Fd  Н А  Tx и Rx  С О В П А Д А Ю Т
+      // UPSAMPLING на Rx отсутствует
+
+      if (d_use_recursive_algorithm == true) { // Р Е К У Р С И В Н Ы Й   А Л Г О Р И Т М   О Б Н А Р У Ж Е Н И Я
+
+        int  i; // for loop ==> (i + 1) is number consume/produce items
+        int  skip_prmbl_cntr = 0; // cntr for skip preamble
 
         // i = 0 (first iteration)
+        i = 0;
         gr_complex autocorr = calc_autocorr(without_dc_in);
         float      energy   = calc_energy(without_dc_in);
 
-        detection_metric[0] = calc_detection_metric(autocorr, energy);
-        out[0]              = in[0];
+        detection_metric[i] = calc_detection_metric(autocorr, energy);
+        out[i]              = in[i];
 
-        if (detection_metric[0] > d_detection_threshold) { // рекурсивный алгоритм (НЕ РАБОТАЕТ)
-          // Signal Detection!
-          // skip samples
-          //std::cout << "Signal Detection" << "i == " << 0 << std::endl;
-          // Тут это кусок не нужен, некретично если одну метрику пропустим!
+        if ( detection_metric[i] > d_detection_threshold ) {
+
+          // Обработать ситуацию когда треугольник который надо скипнуть
+          // полностью не вмещается во входном буфере --> его обработать при следующем вызове general_work()
+          if (i + PREAMBLE_LEN >= noutput_items) {
+            debug_print(noutput_items, ninput_items[0]);
+#if HANDLE_PRMBL_NEXT_WORK_CALL == 1
+            consume_each (i + 1); // 1
+            return i + 1; // 1
+#endif
+          }
+
+          // Тэг для @out
+          add_item_tag(0, // Port number
+                       nitems_written(0) + i, // Offset (абсолютное смещение)
+                       pmt::mp(d_tag_key), // Key
+                       pmt::mp(d_packet_len_with_margin) // Value
+          );
+
+          // Тэг для @detection_metric
+          add_item_tag( 1, nitems_written(1) + i, pmt::mp("Detect Preamble"), pmt::mp(detection_metric[i]) );
+
+          skip_prmbl_cntr = PREAMBLE_LEN - 1; // Для скипа "треугольник"
+
+          d_detected_pckt_num++;
+          std::cout << "number of detected packets: " << d_detected_pckt_num << " : " << nitems_read(0) + i + 1 << std::endl;
         }
 
         // i = 1 ... (recursive algorithm)
-        for (int i = 1; i < noutput_items; ++i) {
+        for (i = 1; i < noutput_items; ++i) {
 
           autocorr = autocorr -
 
@@ -128,22 +173,42 @@ namespace gr {
           detection_metric[i] = calc_detection_metric(autocorr, energy);
           out[i]              = in[i];
 
-          if (detection_metric[i] > d_detection_threshold) {
-            // Signal Detection!
-            // skip samples
-            //std::cout << "Signal Detection" << "i == " << i << std::endl;
+          if ( detection_metric[i] > d_detection_threshold &&
+               skip_prmbl_cntr <= 0 ) {
+
+            // Обработать ситуацию когда треугольник который надо скипнуть
+            // полностью не вмещается во входном буфере --> его обработать при следующем вызове general_work()
+            //
+            // Мб пока убрать??
+            if (i + PREAMBLE_LEN >= noutput_items) {
+              debug_print(noutput_items, ninput_items[0]);
+#if HANDLE_PRMBL_NEXT_WORK_CALL == 1
+              consume_each (i + 1);
+              return i + 1;
+#endif
+            }
+
+            add_item_tag( 0, nitems_written(0) + i, pmt::mp(d_tag_key), pmt::mp(d_packet_len_with_margin) );
+            add_item_tag( 1, nitems_written(1) + i, pmt::mp("Detect Preamble"), pmt::mp(detection_metric[i]) );
+
+            skip_prmbl_cntr = PREAMBLE_LEN; // Для скипа "треугольник"
+
+            d_detected_pckt_num++;
+            std::cout << "number of detected packets: " << d_detected_pckt_num << " : " << nitems_read(0) + i + 1 << std::endl;
           }
+          skip_prmbl_cntr--;
+
         }
 
-      } else { // обычный алгоритм
+      } else { // О Б Ы Ч Н Ы Й   А Л Г О Р И Т М
+
+        int  i; // for loop ==> (i + 1) is number consume/produce items
+        int  skip_prmbl_cntr = 0; // cntr for skip preamble
 
         gr_complex  autocorr;
         float       energy;
 
-//        float MAX_DETECTION_METRIC=0;
-//        int IDNEX = 0;
-
-        for (int i = 0; i < noutput_items; ++i) {
+        for (i = 0; i < noutput_items; ++i) {
 
           autocorr = calc_autocorr(without_dc_in + i);
           energy   = calc_energy(without_dc_in + i);
@@ -151,31 +216,36 @@ namespace gr {
           detection_metric[i] = calc_detection_metric(autocorr, energy);
           out[i]              = in[i];
 
-//          if (i < 700) {
-//            if (MAX_DETECTION_METRIC < detection_metric[i]) {
-//              MAX_DETECTION_METRIC = detection_metric[i];
-//              IDNEX = i;
-//            }
-//          }
+          if ( detection_metric[i] > d_detection_threshold &&
+               skip_prmbl_cntr <= 0 ) {
+
+            if (i + PREAMBLE_LEN >= noutput_items) {
+              debug_print(noutput_items, ninput_items[0]);
+#if HANDLE_PRMBL_NEXT_WORK_CALL == 1
+              consume_each (i + 1);
+              return i + 1;
+#endif
+            }
+
+            add_item_tag( 0, nitems_written(0) + i, pmt::mp(d_tag_key), pmt::mp(d_packet_len_with_margin) );
+            add_item_tag( 1, nitems_written(1) + i, pmt::mp("Detect Preamble"), pmt::mp(detection_metric[i]) );
+
+            skip_prmbl_cntr = PREAMBLE_LEN; // Для скипа "треугольник"
+          }
+          skip_prmbl_cntr--;
+
+          d_detected_pckt_num++;
+          std::cout << "number of detected packets: " << d_detected_pckt_num << " : " << nitems_read(0) + i + 1 << std::endl;
         }
 
-//        std::cout << "Max detection: detection_metric[" << IDNEX << "] = " << MAX_DETECTION_METRIC << std::endl;
-//        std::cout << "out[" << IDNEX << "] = " << out[IDNEX] << std::endl;
-//        std::cout << "out[" << IDNEX-1 << "] = " << out[IDNEX-1] << std::endl;
-//        std::cout << "out[" << IDNEX-2 << "] = " << out[IDNEX-2] << std::endl;
-//        std::cout << "out[" << IDNEX-3 << "] = " << out[IDNEX-3] << std::endl;
-//        std::cout << "out[" << IDNEX+1 << "] = " << out[IDNEX+1] << std::endl;
-//        std::cout << "out[" << IDNEX+2 << "] = " << out[IDNEX+2] << std::endl;
-
       }
-
 
       // Tell runtime system how many input items we consumed on
       // each input stream.
       consume_each (noutput_items);
-
       // Tell runtime system how many output items we produced.
       return noutput_items;
+
     }
 
     inline gr_complex
@@ -214,6 +284,46 @@ namespace gr {
         return abs_autocorr * abs_autocorr / energy / energy;
       }
     }
+
+    inline void
+    ieee_802_11a_preamble_detection_impl::debug_print(int noutput_items, int ninput_items)
+    {
+      std::cout << std::endl;
+      std::cout << d_cntr << ") general_work(): i + PREAMBLE_LEN >= noutput_items" << std::endl;
+      std::cout << "noutput_imtems == " << noutput_items << "; ninput_items[0] == " << ninput_items << std::endl;
+      d_cntr++;
+    }
+
+//    inline bool
+//    ieee_802_11a_preamble_detection_impl::is_preamble_detection(float detection_metric) const
+//    {
+//      if ( detection_metric > d_detection_threshold &&
+//           skip_prmbl_cntr <= 0 ) {
+//
+//        // Обработать ситуацию когда треугольник который надо скипнуть
+//        // полностью не вмещается во входном буфере --> его обработать при следующем вызове general_work()
+//        //
+//        // Мб пока убрать??
+//        if (i + PREAMBLE_LEN >= noutput_items) {
+//          std::cout << "\nieee_802_11a_preamble_detection_impl::general_work(): i + PREAMBLE_LEN >= noutput_items" << std::endl;
+//          std::cout << "noutput_imtems == " << noutput_items << "; ninput_items[0] == " << ninput_items[0] << std::endl;
+////              i++;
+////              break;
+//        }
+//
+//        // Тэг для @out
+//        add_item_tag(0, // Port number
+//                     nitems_written(0) + i, // Offset (абсолютное смещение)
+//                     pmt::mp(d_tag_key), // Key
+//                     pmt::mp(d_packet_len_with_margin) // Value
+//        );
+//
+//        // Тэг для @detection_metric
+//        add_item_tag( 1, nitems_written(1) + i, pmt::mp("Detect Preamble"), pmt::mp(detection_metric[i]) );
+//
+//        skip_prmbl_cntr = PREAMBLE_LEN; // Для скипа "треугольник"
+//      }
+//    }
 
   } /* namespace sefdm */
 } /* namespace gr */

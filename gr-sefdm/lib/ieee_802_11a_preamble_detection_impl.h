@@ -23,6 +23,13 @@
 
 #include <sefdm/ieee_802_11a_preamble_detection.h>
 
+// Если преамбула полностью не вмещается в буфере,
+// то 1 - обработать в следующем вызове general_work()
+// (чтобы не было два детектирования пакета на одной преамбуле)
+//
+// 0 - никак не обрабатывать этот случай
+#define HANDLE_PRMBL_NEXT_WORK_CALL  1
+
 namespace gr {
   namespace sefdm {
 
@@ -36,6 +43,14 @@ namespace gr {
       const bool   d_use_recursive_algorithm;
       const float  d_eps;
 
+      const std::string  d_tag_key;
+      const int          d_packet_len_with_margin;
+
+      unsigned  d_detected_pckt_num; // кол-во обнаруженных пакетов
+
+      // debug
+      int d_cntr;
+
       inline gr_complex
       calc_autocorr(const gr_complex* sig) const;
 
@@ -45,12 +60,18 @@ namespace gr {
       inline float
       calc_detection_metric(gr_complex autocorr, float energy) const;
 
+      inline void
+      debug_print(int noutput_items, int ninput_items);
+
      public:
       ieee_802_11a_preamble_detection_impl(int summation_window,
                                            int signal_offset,
                                            float detection_threshold,
                                            bool use_recursive_algorithm,
-                                           float eps);
+                                           float eps,
+                                           const std::string& tag_key,
+                                           int packet_len,
+                                           int margin);
       ~ieee_802_11a_preamble_detection_impl();
 
       // Where all the action really happens

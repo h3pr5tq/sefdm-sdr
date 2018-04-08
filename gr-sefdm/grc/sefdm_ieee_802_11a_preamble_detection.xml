@@ -4,7 +4,7 @@
   <key>sefdm_ieee_802_11a_preamble_detection</key>
   <category>[sefdm]</category>
   <import>import sefdm</import>
-  <make>sefdm.ieee_802_11a_preamble_detection($L, $D, $Thr, $Algrthm, $Eps)</make>
+  <make>sefdm.ieee_802_11a_preamble_detection($L, $D, $Thr, $Algrthm, $Eps, $TagKey, $PacketLen, $Margin)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
@@ -53,6 +53,27 @@
     <value>0</value>
     <type>float</type>
   </param>
+  
+  <param>
+    <name>Packet Len Tag Key</name>
+    <key>TagKey</key>
+    <value>"packet_len_with_margin"</value>
+    <type>string</type>
+  </param>
+  
+  <param>
+    <name>Packet Len (WITHOUT margin!)</name>
+    <key>PacketLen</key>
+    <value>320 + 80 * 20</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Packet Len Margin</name>
+    <key>Margin</key>
+    <value>150</value>
+    <type>int</type>
+  </param>
 
   <!-- Make one 'sink' node per input. Sub-nodes:
        * name (an identifier for the GUI)
@@ -69,11 +90,6 @@
     <type>complex</type>
   </sink>
 
-  <!-- Make one 'source' node per output. Sub-nodes:
-       * name (an identifier for the GUI)
-       * type
-       * vlen
-       * optional (set to 1 for optional inputs) -->
   <source>
     <name>out</name>
     <type>complex</type>
@@ -82,5 +98,6 @@
   <source>
     <name>detection metric</name>
     <type>float</type>
+    <optional>1</optional>
   </source>
 </block>

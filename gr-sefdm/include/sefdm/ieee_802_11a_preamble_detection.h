@@ -50,7 +50,11 @@ namespace gr {
                        int signal_offset,
                        float detection_threshold,
                        bool use_recursive_algorithm,
-                       float eps);
+                       float eps,
+                       const std::string& tag_key,  // Имя тэга, будет использовать последующими блоками
+                       int packet_len, // Длина пакета
+                       int margin); // Запас по длине пакета (чтобы пакет точно вышёл, т.к. детектор сработает до
+                                    // до начала пакета) --> используется при формировании packet_len_with_margin
     };
 
   } // namespace sefdm
