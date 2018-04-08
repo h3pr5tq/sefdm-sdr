@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<block>
+  <name>extract_packets_from_stream</name>
+  <key>sefdm_extract_packets_from_stream</key>
+  <category>[sefdm]</category>
+  <import>import sefdm</import>
+  <make>sefdm.extract_packets_from_stream($TagKey)</make>
+  <!-- Make one 'param' node for every Parameter you want settable from the GUI.
+       Sub-nodes:
+       * name
+       * key (makes the value accessible as $keyname, e.g. in the make node)
+       * type -->
+  <param>
+    <name>Packet Len Tag Name</name>
+    <key>TagKey</key>
+    <value>"packet_len"</value>
+    <type>string</type>
+  </param>
+
+  <!-- Make one 'sink' node per input. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <sink>
+    <name>in</name>
+    <type>complex</type>
+  </sink>
+
+  <source>
+    <name>out</name>
+    <type>complex</type>
+  </source>
+</block>
