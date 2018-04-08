@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<block>
+  <name>ieee_802_11a_preamble_detection</name>
+  <key>sefdm_ieee_802_11a_preamble_detection</key>
+  <category>[sefdm]</category>
+  <import>import sefdm</import>
+  <make>sefdm.ieee_802_11a_preamble_detection($L, $D, $Thr, $Algrthm, $Eps)</make>
+  <!-- Make one 'param' node for every Parameter you want settable from the GUI.
+       Sub-nodes:
+       * name
+       * key (makes the value accessible as $keyname, e.g. in the make node)
+       * type -->
+  <param>
+    <name>Summation Window (L)</name>
+    <key>L</key>
+    <value>144</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Signal Offset (D)</name>
+    <key>D</key>
+    <value>16</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Detection Threshold</name>
+    <key>Thr</key>
+    <value>0.7</value>
+    <type>float</type>
+  </param>
+
+  <param>
+    <name>Use Recursive Algorithm</name>
+    <key>Algrthm</key>
+    <value>False</value>
+    <type>bool</type>
+    
+    <option>
+      <name>Yes</name>
+      <key>True</key>
+    </option>
+    <option>
+        <name>No</name>
+        <key>False</key>
+    </option>
+  </param>
+  
+  <param>
+    <name>Epsilon (autocorr and energy too small)</name>
+    <key>Eps</key>
+    <value>0</value>
+    <type>float</type>
+  </param>
+
+  <!-- Make one 'sink' node per input. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <sink>
+    <name>in</name>
+    <type>complex</type>
+  </sink>
+  
+  <sink>
+    <name>in without DC</name>
+    <type>complex</type>
+  </sink>
+
+  <!-- Make one 'source' node per output. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <source>
+    <name>out</name>
+    <type>complex</type>
+  </source>
+  
+  <source>
+    <name>detection metric</name>
+    <type>float</type>
+  </source>
+</block>
