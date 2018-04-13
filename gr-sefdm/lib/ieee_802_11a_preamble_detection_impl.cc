@@ -167,8 +167,8 @@ namespace gr {
               abs( without_dc_in[i - 1 + d_summation_window + d_signal_offset] ) *
               abs( without_dc_in[i - 1 + d_summation_window + d_signal_offset] ) -
 
-              abs( without_dc_in[i - 1 + d_summation_window] ) *
-              abs( without_dc_in[i - 1 + d_summation_window] );
+              abs( without_dc_in[i - 1 + d_signal_offset] ) *
+              abs( without_dc_in[i - 1 + d_signal_offset] );
 
           detection_metric[i] = calc_detection_metric(autocorr, energy);
           out[i]              = in[i];
@@ -210,32 +210,32 @@ namespace gr {
 
         for (i = 0; i < noutput_items; ++i) {
 
-          autocorr = calc_autocorr(without_dc_in + i);
-          energy   = calc_energy(without_dc_in + i);
+            autocorr = calc_autocorr(without_dc_in + i);
+            energy   = calc_energy(without_dc_in + i);
 
-          detection_metric[i] = calc_detection_metric(autocorr, energy);
-          out[i]              = in[i];
+            detection_metric[i] = calc_detection_metric(autocorr, energy);
+            out[i]              = in[i];
 
-          if ( detection_metric[i] > d_detection_threshold &&
-               skip_prmbl_cntr <= 0 ) {
+            if ( detection_metric[i] > d_detection_threshold &&
+                 skip_prmbl_cntr <= 0 ) {
 
-            if (i + PREAMBLE_LEN >= noutput_items) {
-              debug_print(noutput_items, ninput_items[0]);
+              if (i + PREAMBLE_LEN >= noutput_items) {
+                debug_print(noutput_items, ninput_items[0]);
 #if HANDLE_PRMBL_NEXT_WORK_CALL == 1
-              consume_each (i + 1);
-              return i + 1;
+                consume_each (i + 1);
+                return i + 1;
 #endif
+              }
+
+              add_item_tag( 0, nitems_written(0) + i, pmt::mp(d_tag_key), pmt::mp(d_packet_len_with_margin) );
+              add_item_tag( 1, nitems_written(1) + i, pmt::mp("Detect Preamble"), pmt::mp(detection_metric[i]) );
+
+              skip_prmbl_cntr = PREAMBLE_LEN; // Для скипа "треугольник"
+
+              d_detected_pckt_num++;
+              std::cout << "number of detected packets: " << d_detected_pckt_num << " : " << nitems_read(0) + i + 1 << std::endl;
             }
-
-            add_item_tag( 0, nitems_written(0) + i, pmt::mp(d_tag_key), pmt::mp(d_packet_len_with_margin) );
-            add_item_tag( 1, nitems_written(1) + i, pmt::mp("Detect Preamble"), pmt::mp(detection_metric[i]) );
-
-            skip_prmbl_cntr = PREAMBLE_LEN; // Для скипа "треугольник"
-          }
-          skip_prmbl_cntr--;
-
-          d_detected_pckt_num++;
-          std::cout << "number of detected packets: " << d_detected_pckt_num << " : " << nitems_read(0) + i + 1 << std::endl;
+            skip_prmbl_cntr--;
         }
 
       }
@@ -251,9 +251,9 @@ namespace gr {
     inline gr_complex
     ieee_802_11a_preamble_detection_impl::calc_autocorr(const gr_complex* sig) const
     {
-      gr_complex autocorr = 0;
+      gr_complex autocorr(0.0f, 0.0f);
       for (int k = 0; k < d_summation_window; ++k) {
-        autocorr += sig[k] * conj(sig[k + d_signal_offset]);
+        autocorr += sig[k] * conj( sig[k + d_signal_offset] );
       }
 
       return autocorr;
@@ -262,10 +262,10 @@ namespace gr {
     inline float
     ieee_802_11a_preamble_detection_impl::calc_energy(const gr_complex* sig) const
     {
-      float energy = 0,
+      float energy = 0.0f,
             abs_val;
       for (int k = 0; k < d_summation_window; ++k) {
-        abs_val = abs(sig[k + d_signal_offset]);
+        abs_val = abs( sig[k + d_signal_offset] );
         energy += abs_val * abs_val;
       }
 
