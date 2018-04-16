@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<block>
+  <name>message_test</name>
+  <key>learn_message_test</key>
+  <category>[learn]</category>
+  <import>import learn</import>
+  <make>learn.message_test()</make>
+  <!-- Make one 'param' node for every Parameter you want settable from the GUI.
+       Sub-nodes:
+       * name
+       * key (makes the value accessible as $keyname, e.g. in the make node)
+       * type -->
+  <!-- <param>
+    <name>...</name>
+    <key>...</key>
+    <type>...</type>
+  </param> -->
+
+  <!-- Make one 'sink' node per input. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <sink>
+    <name>in</name>
+    <type>float</type>
+    <optional>1</optional>
+  </sink>
+  
+  <sink>
+    <name>in_port_name_ID</name>
+    <type>message</type>
+  </sink>
+
+  <!-- Make one 'source' node per output. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <source>
+    <name>out</name>
+    <type>float</type>
+    <optional>1</optional>
+  </source>
+  
+    <source>
+    <name>out_port_name_ID</name>
+    <type>message</type>
+  </source>
+</block>

@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<block>
+  <name>signal_detect</name>
+  <key>learn_signal_detect</key>
+  <category>[learn]</category>
+  <import>import learn</import>
+  <make>learn.signal_detect($L, $D, $Thr)</make>
+  <!-- Make one 'param' node for every Parameter you want settable from the GUI.
+       Sub-nodes:
+       * name
+       * key (makes the value accessible as $keyname, e.g. in the make node)
+       * type -->
+  <param>
+    <name>Summation Window (L)</name>
+    <key>L</key>
+    <value>144</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Signal Offset (D)</name>
+    <key>D</key>
+    <value>16</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Detection Threshold</name>
+    <key>Thr</key>
+    <value>0.5</value>
+    <type>float</type>
+  </param>
+
+  <!-- Make one 'sink' node per input. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <sink>
+    <name>filtered in</name>
+    <type>complex</type>
+  </sink>
+  
+  <sink>
+    <name>in</name>
+    <type>complex</type>
+  </sink>
+
+  <!-- Make one 'source' node per output. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <source>
+    <name>out</name>
+    <type>complex</type>
+  </source>
+  
+  <source>
+    <name>detection metric</name>
+    <type>float</type>
+  </source>
+</block>
