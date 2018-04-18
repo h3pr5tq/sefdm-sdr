@@ -232,11 +232,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>file</key>
-      <value>/home/ivan/Yandex.Disk/documents/Practick/sdr/Signals/RxBaseband_Truncate_ComlexFloat32_bin/rx_tr_randi_20ofdm_20000pckt_15.dat</value>
+      <value>/home/ivan/Documents/Diplom/Signals/RxBaseband_Truncate_ComlexFloat32_bin/rx_tr_randi_20ofdm_20000pckt_15.dat</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -318,7 +318,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -404,7 +404,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(576, 776)</value>
+      <value>(456, 920)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -447,7 +447,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(328, 772)</value>
+      <value>(152, 924)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -494,7 +494,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(200, 596)</value>
+      <value>(72, 612)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -537,7 +537,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -1931,7 +1931,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -2491,7 +2491,7 @@
     </param>
     <param>
       <key>update_time</key>
-      <value>0.010</value>
+      <value>0.00010</value>
     </param>
     <param>
       <key>xmax</key>
@@ -2542,7 +2542,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -3295,11 +3295,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(456, 600)</value>
+      <value>(304, 736)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3390,6 +3390,81 @@
     </param>
   </block>
   <block>
+    <key>sefdm_ieee_802_11a_synchronization</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>CTS_segmentLen</key>
+      <value>160</value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>FFS_isMake</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>FFS_offset</key>
+      <value>15</value>
+    </param>
+    <param>
+      <key>FTS_segmentLen</key>
+      <value>40</value>
+    </param>
+    <param>
+      <key>FTS_etalonLen</key>
+      <value>32</value>
+    </param>
+    <param>
+      <key>FTS_offset</key>
+      <value>160 + 32 - 20</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(320, 556)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>sefdm_ieee_802_11a_synchronization_0</value>
+    </param>
+    <param>
+      <key>Payload_GILen</key>
+      <value>16</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>Payload_subcarrNum</key>
+      <value>64</value>
+    </param>
+    <param>
+      <key>Payload_symNum</key>
+      <value>20</value>
+    </param>
+  </block>
+  <block>
     <key>sefdm_ofdm_symbol_demodulation</key>
     <param>
       <key>alias</key>
@@ -3409,7 +3484,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(536, 672)</value>
+      <value>(632, 664)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3443,6 +3518,12 @@
   <connection>
     <source_block_id>blocks_tagged_stream_to_pdu_0</source_block_id>
     <sink_block_id>sefdm_ieee_802_11a_coarse_time_synch_0</sink_block_id>
+    <source_key>pdus</source_key>
+    <sink_key>in</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>blocks_tagged_stream_to_pdu_0</source_block_id>
+    <sink_block_id>sefdm_ieee_802_11a_synchronization_0</sink_block_id>
     <source_key>pdus</source_key>
     <sink_key>in</sink_key>
   </connection>
@@ -3511,6 +3592,12 @@
     <sink_block_id>sefdm_extract_packets_from_stream_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>sefdm_ieee_802_11a_synchronization_0</source_block_id>
+    <sink_block_id>sefdm_ofdm_symbol_demodulation_0</sink_block_id>
+    <source_key>out</source_key>
+    <sink_key>in2</sink_key>
   </connection>
   <connection>
     <source_block_id>sefdm_ofdm_symbol_demodulation_0</source_block_id>

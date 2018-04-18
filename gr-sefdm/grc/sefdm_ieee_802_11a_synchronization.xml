@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<block>
+  <name>ieee_802_11a_synchronization</name>
+  <key>sefdm_ieee_802_11a_synchronization</key>
+  <category>[sefdm]</category>
+  <import>import sefdm</import>
+  <make>sefdm.ieee_802_11a_synchronization($CTS_segmentLen,
+                                           $FFS_isMake, $FFS_offset,
+                                           $FTS_offset, $FTS_segmentLen, $FTS_etalonLen,
+                                           $Payload_symNum, $Payload_subcarrNum, $Payload_GILen)</make>
+  <!-- Make one 'param' node for every Parameter you want settable from the GUI.
+       Sub-nodes:
+       * name
+       * key (makes the value accessible as $keyname, e.g. in the make node)
+       * type -->
+  <param>
+    <name>CTS: Autocorr Calc Segment</name>
+    <key>CTS_segmentLen</key>
+    <value>160</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>FFS: Is make?</name>
+    <key>FFS_isMake</key>
+    <value>True</value>
+    <type>bool</type>
+    <option>
+      <name>Yes</name>
+      <key>True</key>
+    </option>
+    <option>
+        <name>No</name>
+        <key>False</key>
+    </option>
+  </param>
+  
+  <param>
+    <name>FFS: Offset from CTS est</name>
+    <key>FFS_offset</key>
+    <value>15</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>FTS: Offset from CTS est</name>
+    <key>FTS_offset</key>
+    <value>160 + 32 - 20</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>FTS: Corr Calc Segment</name>
+    <key>FTS_segmentLen</key>
+    <value>40</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>FTS: Etalon Sig Len</name>
+    <key>FTS_etalonLen</key>
+    <value>32</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>N Sym in Packet Payload</name>
+    <key>Payload_symNum</key>
+    <value>20</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>N Subcarr in Payload Sym</name>
+    <key>Payload_subcarrNum</key>
+    <value>64</value>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Len of Payload GI</name>
+    <key>Payload_GILen</key>
+    <value>16</value>
+    <type>int</type>
+  </param>
+
+  <!-- Make one 'sink' node per input. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <sink>
+    <name>in</name>
+    <type>message</type>
+  </sink>
+
+  <!-- Make one 'source' node per output. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <source>
+    <name>out</name>
+    <type>message</type>
+  </source>
+</block>

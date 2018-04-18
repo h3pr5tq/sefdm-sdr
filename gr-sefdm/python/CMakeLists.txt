@@ -45,3 +45,4 @@ GR_ADD_TEST(qa_ieee_802_11a_preamble_detection ${PYTHON_EXECUTABLE} ${CMAKE_CURR
 GR_ADD_TEST(qa_extract_packets_from_stream ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_extract_packets_from_stream.py)
 GR_ADD_TEST(qa_ieee_802_11a_coarse_time_synch ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_ieee_802_11a_coarse_time_synch.py)
 GR_ADD_TEST(qa_ofdm_symbol_demodulation ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_ofdm_symbol_demodulation.py)
+GR_ADD_TEST(qa_ieee_802_11a_synchronization ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_ieee_802_11a_synchronization.py)

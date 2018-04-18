@@ -20,5 +20,6 @@ install(FILES
     sefdm_ieee_802_11a_preamble_detection.xml
     sefdm_extract_packets_from_stream.xml
     sefdm_ieee_802_11a_coarse_time_synch.xml
-    sefdm_ofdm_symbol_demodulation.xml DESTINATION share/gnuradio/grc/blocks
+    sefdm_ofdm_symbol_demodulation.xml
+    sefdm_ieee_802_11a_synchronization.xml DESTINATION share/gnuradio/grc/blocks
 )

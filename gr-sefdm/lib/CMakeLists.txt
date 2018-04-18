@@ -28,7 +28,8 @@ list(APPEND sefdm_sources
     ieee_802_11a_preamble_detection_impl.cc
     extract_packets_from_stream_impl.cc
     ieee_802_11a_coarse_time_synch_impl.cc
-    ofdm_symbol_demodulation_impl.cc )
+    ofdm_symbol_demodulation_impl.cc
+    ieee_802_11a_synchronization_impl.cc )
 
 set(sefdm_sources "${sefdm_sources}" PARENT_SCOPE)
 if(NOT sefdm_sources)
