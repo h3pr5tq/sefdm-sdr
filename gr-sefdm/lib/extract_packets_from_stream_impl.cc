@@ -89,7 +89,7 @@ namespace gr {
               packet_len = pmt::to_long(tags[i].value);
               relative_offset = tags[i].offset - nitems_read(0);
 
-              if (relative_offset + packet_len > ninput_items[0]) { // Последний пакет не содержится полностью в буфере
+              if (relative_offset + packet_len > ninput_items[0]) { // Последний пакет не содержится полностью во входном буфере
                 break;
 
               } else if (nproduce_items + packet_len > noutput_items) { // Если пакет не влезает в выходной буфер (из-за перекрытия пакетов)

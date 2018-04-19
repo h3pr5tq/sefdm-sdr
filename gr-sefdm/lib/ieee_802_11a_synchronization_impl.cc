@@ -267,23 +267,6 @@ namespace gr {
         // Channel Freq Response Estimation
         const std::vector<gr_complex> channel_est = estimate_channel(in, fts_est);
 
-//        // Удаление преамбулы и передача по одному ofdm-символу следующему блоку
-//        // Передавать будем пакет!!! А то получается слишком много дублируем channel freq response
-//        // Доделать!
-//        gr_complex  one_ofdm_sym[d_payload_subcarriers_num];
-//        for (int i = 0; i < d_payload_ofdm_sym_num; ++i) {
-//
-//            for (int j = 0; j < d_payload_subcarriers_num; ++j) {
-//              one_ofdm_sym[j] = in[0 + fts_est + 64 + 64 + d_payload_gi_len + j + i * (d_payload_subcarriers_num + d_payload_gi_len)];
-//            }
-//            pmt::pmt_t  p_one_ofdm_sym =
-//                pmt::init_c32vector(d_payload_subcarriers_num, one_ofdm_sym);
-////            set_cdr(msg, p_one_ofdm_sym); // 48 ?? мб тут ошибка и надо новый создавать экземпляр
-////            // вывести в консоль (сообщения (pdu) содержат одинаковую payload нагрузку)
-//            pmt::pmt_t  msg2 = cons(p_synch_info, p_one_ofdm_sym); // НАДО создавать новое pdu!
-//            message_port_pub(pmt::mp("out"), msg2); // верно
-//        }
-
         // Получение массива с полезной нагрузкой (без GI и без Preamble)
         gr_complex  payload_without_gi[d_payload_ofdm_sym_num * d_payload_subcarriers_num];
         int  offset          = fts_est + 64 + 64 + d_payload_gi_len;
@@ -293,7 +276,7 @@ namespace gr {
 
           for (int k = 0; k < d_payload_subcarriers_num; ++k) {
 
-            payload_without_gi[i * d_payload_ofdm_sym_num + k] =
+            payload_without_gi[i * d_payload_subcarriers_num + k] =
                 in[offset + k + i * sym_with_gi_len];
           }
         }

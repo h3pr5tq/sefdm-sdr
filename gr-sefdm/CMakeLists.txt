@@ -37,6 +37,11 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "")
 
+#My: add #define DEBUG if CMAKE_BUILD_TYPE=Debug
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+   set(CMAKE_CXX_FLAGS "-D CMAKE_BUILD_TYPE_DEBUG")
+endif()
+
 #make sure our local CMake Modules path comes first
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
 
