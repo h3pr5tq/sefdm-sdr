@@ -26,5 +26,6 @@ install(FILES
     extract_packets_from_stream.h
     ieee_802_11a_coarse_time_synch.h
     ofdm_symbol_demodulation.h
-    ieee_802_11a_synchronization.h DESTINATION include/sefdm
+    ieee_802_11a_synchronization.h
+    ieee_802_11a_ofdm_symbol_demodulation.h DESTINATION include/sefdm
 )

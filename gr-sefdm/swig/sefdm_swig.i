@@ -13,6 +13,7 @@
 #include "sefdm/ieee_802_11a_coarse_time_synch.h"
 #include "sefdm/ofdm_symbol_demodulation.h"
 #include "sefdm/ieee_802_11a_synchronization.h"
+#include "sefdm/ieee_802_11a_ofdm_symbol_demodulation.h"
 %}
 
 %include "sefdm/ieee_802_11a_preamble_detection.h"
@@ -25,3 +26,5 @@ GR_SWIG_BLOCK_MAGIC2(sefdm, ieee_802_11a_coarse_time_synch);
 GR_SWIG_BLOCK_MAGIC2(sefdm, ofdm_symbol_demodulation);
 %include "sefdm/ieee_802_11a_synchronization.h"
 GR_SWIG_BLOCK_MAGIC2(sefdm, ieee_802_11a_synchronization);
+%include "sefdm/ieee_802_11a_ofdm_symbol_demodulation.h"
+GR_SWIG_BLOCK_MAGIC2(sefdm, ieee_802_11a_ofdm_symbol_demodulation);

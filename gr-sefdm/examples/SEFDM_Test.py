@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Sefdm Test
-# Generated: Wed Apr 18 16:06:48 2018
+# Generated: Thu Apr 19 13:20:34 2018
 ##################################################
 
 if __name__ == '__main__':
@@ -58,25 +58,27 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.samp_rate = samp_rate = 10e6
-        self.packet_len_with_margin_tag_key = packet_len_with_margin_tag_key = "packet_len"
-        self.packet_len = packet_len = 320 + 80 * 20
-        self.num_point_on_graph = num_point_on_graph = 29500
-        self.carrier_freq = carrier_freq = 450e6
+        self.payload_sym_num = payload_sym_num = 20
+        self.payload_subcarr_num = payload_subcarr_num = 64
+        self.payload_gi_len = payload_gi_len = 16
+        self.radio_samp_rate = radio_samp_rate = 10e6
+        self.radio_carrier_freq = radio_carrier_freq = 450e6
+        self.qtTimeSink_num_point = qtTimeSink_num_point = 29500
+        self.prmbl_payload_len = prmbl_payload_len = 320 + payload_sym_num * (payload_subcarr_num + payload_gi_len)
 
         ##################################################
         # Blocks
         ##################################################
-        self.sefdm_ofdm_symbol_demodulation_0 = sefdm.ofdm_symbol_demodulation()
         self.sefdm_ieee_802_11a_synchronization_0 = sefdm.ieee_802_11a_synchronization(160,
                                                    True, 15,
                                                    160 + 32 - 20, 40, 32,
-                                                   20, 64, 16)
-        self.sefdm_ieee_802_11a_preamble_detection_0 = sefdm.ieee_802_11a_preamble_detection(144, 16, 0.3, True, -20, packet_len_with_margin_tag_key, packet_len, 150)
-        self.sefdm_extract_packets_from_stream_0 = sefdm.extract_packets_from_stream(packet_len_with_margin_tag_key)
+                                                   payload_sym_num, payload_subcarr_num, payload_gi_len)
+        self.sefdm_ieee_802_11a_preamble_detection_0 = sefdm.ieee_802_11a_preamble_detection(144, 16, 0.6, True, -20, "packet_len", prmbl_payload_len, 150)
+        self.sefdm_ieee_802_11a_ofdm_symbol_demodulation_0 = sefdm.ieee_802_11a_ofdm_symbol_demodulation(payload_sym_num, payload_subcarr_num)
+        self.sefdm_extract_packets_from_stream_0 = sefdm.extract_packets_from_stream("packet_len")
         self.qtgui_time_sink_x_1 = qtgui.time_sink_f(
-        	num_point_on_graph, #size
-        	samp_rate, #samp_rate
+        	qtTimeSink_num_point, #size
+        	radio_samp_rate, #samp_rate
         	"", #name
         	1 #number of inputs
         )
@@ -122,8 +124,8 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         self._qtgui_time_sink_x_1_win = sip.wrapinstance(self.qtgui_time_sink_x_1.pyqwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_time_sink_x_1_win)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_c(
-        	num_point_on_graph, #size
-        	samp_rate, #samp_rate
+        	qtTimeSink_num_point, #size
+        	radio_samp_rate, #samp_rate
         	"", #name
         	1 #number of inputs
         )
@@ -214,25 +216,21 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         self.top_layout.addWidget(self._qtgui_const_sink_x_0_win)
         self.fir_filter_xxx_0 = filter.fir_filter_ccf(1, ([-0.0690, -0.2497, 0.6374, -0.2497, -0.0690]))
         self.fir_filter_xxx_0.declare_sample_delay(0)
-        self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
-        self.blocks_tagged_stream_to_pdu_0 = blocks.tagged_stream_to_pdu(blocks.complex_t, packet_len_with_margin_tag_key)
-        self.blocks_null_sink_0 = blocks.null_sink(gr.sizeof_float*1)
-        self.blocks_message_debug_0_0 = blocks.message_debug()
+        self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, radio_samp_rate,True)
+        self.blocks_tagged_stream_to_pdu_0 = blocks.tagged_stream_to_pdu(blocks.complex_t, "packet_len")
         self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/ivan/Documents/Diplom/Signals/RxBaseband_Truncate_ComlexFloat32_bin/rx_tr_randi_20ofdm_20000pckt_15.dat', False)
 
         ##################################################
         # Connections
         ##################################################
         self.msg_connect((self.blocks_tagged_stream_to_pdu_0, 'pdus'), (self.sefdm_ieee_802_11a_synchronization_0, 'in'))    
-        self.msg_connect((self.sefdm_ieee_802_11a_synchronization_0, 'out'), (self.sefdm_ofdm_symbol_demodulation_0, 'in2'))    
-        self.msg_connect((self.sefdm_ofdm_symbol_demodulation_0, 'out2'), (self.blocks_message_debug_0_0, 'print'))    
-        self.msg_connect((self.sefdm_ofdm_symbol_demodulation_0, 'out2'), (self.qtgui_const_sink_x_0, 'in'))    
+        self.msg_connect((self.sefdm_ieee_802_11a_ofdm_symbol_demodulation_0, 'out2'), (self.qtgui_const_sink_x_0, 'in'))    
+        self.msg_connect((self.sefdm_ieee_802_11a_synchronization_0, 'out'), (self.sefdm_ieee_802_11a_ofdm_symbol_demodulation_0, 'in2'))    
         self.connect((self.blocks_file_source_0, 0), (self.blocks_throttle_0, 0))    
         self.connect((self.blocks_throttle_0, 0), (self.fir_filter_xxx_0, 0))    
         self.connect((self.blocks_throttle_0, 0), (self.sefdm_ieee_802_11a_preamble_detection_0, 0))    
         self.connect((self.fir_filter_xxx_0, 0), (self.sefdm_ieee_802_11a_preamble_detection_0, 1))    
         self.connect((self.sefdm_extract_packets_from_stream_0, 0), (self.blocks_tagged_stream_to_pdu_0, 0))    
-        self.connect((self.sefdm_ieee_802_11a_preamble_detection_0, 1), (self.blocks_null_sink_0, 0))    
         self.connect((self.sefdm_ieee_802_11a_preamble_detection_0, 0), (self.qtgui_time_sink_x_0, 0))    
         self.connect((self.sefdm_ieee_802_11a_preamble_detection_0, 1), (self.qtgui_time_sink_x_1, 0))    
         self.connect((self.sefdm_ieee_802_11a_preamble_detection_0, 0), (self.sefdm_extract_packets_from_stream_0, 0))    
@@ -242,38 +240,53 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         self.settings.setValue("geometry", self.saveGeometry())
         event.accept()
 
-    def get_samp_rate(self):
-        return self.samp_rate
+    def get_payload_sym_num(self):
+        return self.payload_sym_num
 
-    def set_samp_rate(self, samp_rate):
-        self.samp_rate = samp_rate
-        self.qtgui_time_sink_x_1.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
-        self.blocks_throttle_0.set_sample_rate(self.samp_rate)
+    def set_payload_sym_num(self, payload_sym_num):
+        self.payload_sym_num = payload_sym_num
+        self.set_prmbl_payload_len(320 + self.payload_sym_num * (self.payload_subcarr_num + self.payload_gi_len))
 
-    def get_packet_len_with_margin_tag_key(self):
-        return self.packet_len_with_margin_tag_key
+    def get_payload_subcarr_num(self):
+        return self.payload_subcarr_num
 
-    def set_packet_len_with_margin_tag_key(self, packet_len_with_margin_tag_key):
-        self.packet_len_with_margin_tag_key = packet_len_with_margin_tag_key
+    def set_payload_subcarr_num(self, payload_subcarr_num):
+        self.payload_subcarr_num = payload_subcarr_num
+        self.set_prmbl_payload_len(320 + self.payload_sym_num * (self.payload_subcarr_num + self.payload_gi_len))
 
-    def get_packet_len(self):
-        return self.packet_len
+    def get_payload_gi_len(self):
+        return self.payload_gi_len
 
-    def set_packet_len(self, packet_len):
-        self.packet_len = packet_len
+    def set_payload_gi_len(self, payload_gi_len):
+        self.payload_gi_len = payload_gi_len
+        self.set_prmbl_payload_len(320 + self.payload_sym_num * (self.payload_subcarr_num + self.payload_gi_len))
 
-    def get_num_point_on_graph(self):
-        return self.num_point_on_graph
+    def get_radio_samp_rate(self):
+        return self.radio_samp_rate
 
-    def set_num_point_on_graph(self, num_point_on_graph):
-        self.num_point_on_graph = num_point_on_graph
+    def set_radio_samp_rate(self, radio_samp_rate):
+        self.radio_samp_rate = radio_samp_rate
+        self.qtgui_time_sink_x_1.set_samp_rate(self.radio_samp_rate)
+        self.qtgui_time_sink_x_0.set_samp_rate(self.radio_samp_rate)
+        self.blocks_throttle_0.set_sample_rate(self.radio_samp_rate)
 
-    def get_carrier_freq(self):
-        return self.carrier_freq
+    def get_radio_carrier_freq(self):
+        return self.radio_carrier_freq
 
-    def set_carrier_freq(self, carrier_freq):
-        self.carrier_freq = carrier_freq
+    def set_radio_carrier_freq(self, radio_carrier_freq):
+        self.radio_carrier_freq = radio_carrier_freq
+
+    def get_qtTimeSink_num_point(self):
+        return self.qtTimeSink_num_point
+
+    def set_qtTimeSink_num_point(self, qtTimeSink_num_point):
+        self.qtTimeSink_num_point = qtTimeSink_num_point
+
+    def get_prmbl_payload_len(self):
+        return self.prmbl_payload_len
+
+    def set_prmbl_payload_len(self, prmbl_payload_len):
+        self.prmbl_payload_len = prmbl_payload_len
 
 
 def main(top_block_cls=SEFDM_Test, options=None):

@@ -148,7 +148,9 @@ namespace gr {
           skip_prmbl_cntr = PREAMBLE_LEN - 1; // Для скипа "треугольник"
 
           d_detected_pckt_num++;
+#ifdef CMAKE_BUILD_TYPE_DEBUG
           std::cout << "number of detected packets: " << d_detected_pckt_num << " : " << nitems_read(0) + i + 1 << std::endl;
+#endif
         }
 
         // i = 1 ... (recursive algorithm)
@@ -194,7 +196,9 @@ namespace gr {
             skip_prmbl_cntr = PREAMBLE_LEN; // Для скипа "треугольник"
 
             d_detected_pckt_num++;
+#ifdef CMAKE_BUILD_TYPE_DEBUG
             std::cout << "number of detected packets: " << d_detected_pckt_num << " : " << nitems_read(0) + i + 1 << std::endl;
+#endif
           }
           skip_prmbl_cntr--;
 
@@ -233,7 +237,9 @@ namespace gr {
               skip_prmbl_cntr = PREAMBLE_LEN; // Для скипа "треугольник"
 
               d_detected_pckt_num++;
+#ifdef CMAKE_BUILD_TYPE_DEBUG
               std::cout << "number of detected packets: " << d_detected_pckt_num << " : " << nitems_read(0) + i + 1 << std::endl;
+#endif
             }
             skip_prmbl_cntr--;
         }
