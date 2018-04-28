@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Sefdm Test
-# Generated: Thu Apr 19 13:20:34 2018
+# Generated: Thu Apr 26 16:35:00 2018
 ##################################################
 
 if __name__ == '__main__':
@@ -25,6 +25,7 @@ from gnuradio import qtgui
 from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
 from optparse import OptionParser
+import mapper
 import sefdm
 import sip
 import sys
@@ -173,21 +174,21 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         
         self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
-        self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
+        self.qtgui_const_sink_x_0_0 = qtgui.const_sink_c(
         	1024, #size
         	"", #name
-        	0 #number of inputs
+        	1 #number of inputs
         )
-        self.qtgui_const_sink_x_0.set_update_time(0.00010)
-        self.qtgui_const_sink_x_0.set_y_axis(-2, 2)
-        self.qtgui_const_sink_x_0.set_x_axis(-2, 2)
-        self.qtgui_const_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, "")
-        self.qtgui_const_sink_x_0.enable_autoscale(False)
-        self.qtgui_const_sink_x_0.enable_grid(True)
-        self.qtgui_const_sink_x_0.enable_axis_labels(True)
+        self.qtgui_const_sink_x_0_0.set_update_time(0.00010)
+        self.qtgui_const_sink_x_0_0.set_y_axis(-2, 2)
+        self.qtgui_const_sink_x_0_0.set_x_axis(-2, 2)
+        self.qtgui_const_sink_x_0_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, "")
+        self.qtgui_const_sink_x_0_0.enable_autoscale(False)
+        self.qtgui_const_sink_x_0_0.enable_grid(True)
+        self.qtgui_const_sink_x_0_0.enable_axis_labels(True)
         
         if not True:
-          self.qtgui_const_sink_x_0.disable_legend()
+          self.qtgui_const_sink_x_0_0.disable_legend()
         
         labels = ['', '', '', '', '',
                   '', '', '', '', '']
@@ -203,33 +204,40 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
                   1.0, 1.0, 1.0, 1.0, 1.0]
         for i in xrange(1):
             if len(labels[i]) == 0:
-                self.qtgui_const_sink_x_0.set_line_label(i, "Data {0}".format(i))
+                self.qtgui_const_sink_x_0_0.set_line_label(i, "Data {0}".format(i))
             else:
-                self.qtgui_const_sink_x_0.set_line_label(i, labels[i])
-            self.qtgui_const_sink_x_0.set_line_width(i, widths[i])
-            self.qtgui_const_sink_x_0.set_line_color(i, colors[i])
-            self.qtgui_const_sink_x_0.set_line_style(i, styles[i])
-            self.qtgui_const_sink_x_0.set_line_marker(i, markers[i])
-            self.qtgui_const_sink_x_0.set_line_alpha(i, alphas[i])
+                self.qtgui_const_sink_x_0_0.set_line_label(i, labels[i])
+            self.qtgui_const_sink_x_0_0.set_line_width(i, widths[i])
+            self.qtgui_const_sink_x_0_0.set_line_color(i, colors[i])
+            self.qtgui_const_sink_x_0_0.set_line_style(i, styles[i])
+            self.qtgui_const_sink_x_0_0.set_line_marker(i, markers[i])
+            self.qtgui_const_sink_x_0_0.set_line_alpha(i, alphas[i])
         
-        self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_const_sink_x_0_win)
+        self._qtgui_const_sink_x_0_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0_0.pyqwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_const_sink_x_0_0_win)
+        self.mapper_demapper_0 = mapper.demapper(mapper.BPSK, ([0,1]))
         self.fir_filter_xxx_0 = filter.fir_filter_ccf(1, ([-0.0690, -0.2497, 0.6374, -0.2497, -0.0690]))
         self.fir_filter_xxx_0.declare_sample_delay(0)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, radio_samp_rate,True)
         self.blocks_tagged_stream_to_pdu_0 = blocks.tagged_stream_to_pdu(blocks.complex_t, "packet_len")
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/ivan/Documents/Diplom/Signals/RxBaseband_Truncate_ComlexFloat32_bin/rx_tr_randi_20ofdm_20000pckt_15.dat', False)
+        self.blocks_pdu_to_tagged_stream_0 = blocks.pdu_to_tagged_stream(blocks.complex_t, 'packet_len')
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/ivan/Documents/Diplom/Signals/RxBaseband_ComplexFloat32_bin/rx_randi_20ofdm_20000pckt_15.dat', False)
+        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, '/home/ivan/Documents/Diplom/file.test', False)
+        self.blocks_file_sink_0.set_unbuffered(False)
 
         ##################################################
         # Connections
         ##################################################
         self.msg_connect((self.blocks_tagged_stream_to_pdu_0, 'pdus'), (self.sefdm_ieee_802_11a_synchronization_0, 'in'))    
-        self.msg_connect((self.sefdm_ieee_802_11a_ofdm_symbol_demodulation_0, 'out2'), (self.qtgui_const_sink_x_0, 'in'))    
+        self.msg_connect((self.sefdm_ieee_802_11a_ofdm_symbol_demodulation_0, 'out2'), (self.blocks_pdu_to_tagged_stream_0, 'pdus'))    
         self.msg_connect((self.sefdm_ieee_802_11a_synchronization_0, 'out'), (self.sefdm_ieee_802_11a_ofdm_symbol_demodulation_0, 'in2'))    
         self.connect((self.blocks_file_source_0, 0), (self.blocks_throttle_0, 0))    
+        self.connect((self.blocks_pdu_to_tagged_stream_0, 0), (self.mapper_demapper_0, 0))    
+        self.connect((self.blocks_pdu_to_tagged_stream_0, 0), (self.qtgui_const_sink_x_0_0, 0))    
         self.connect((self.blocks_throttle_0, 0), (self.fir_filter_xxx_0, 0))    
         self.connect((self.blocks_throttle_0, 0), (self.sefdm_ieee_802_11a_preamble_detection_0, 0))    
         self.connect((self.fir_filter_xxx_0, 0), (self.sefdm_ieee_802_11a_preamble_detection_0, 1))    
+        self.connect((self.mapper_demapper_0, 0), (self.blocks_file_sink_0, 0))    
         self.connect((self.sefdm_extract_packets_from_stream_0, 0), (self.blocks_tagged_stream_to_pdu_0, 0))    
         self.connect((self.sefdm_ieee_802_11a_preamble_detection_0, 0), (self.qtgui_time_sink_x_0, 0))    
         self.connect((self.sefdm_ieee_802_11a_preamble_detection_0, 1), (self.qtgui_time_sink_x_1, 0))    
