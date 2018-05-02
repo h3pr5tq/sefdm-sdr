@@ -27,7 +27,7 @@ function form_const_for_detection_algorithm(Q, N, alfa)
 	% for ML
 	inv_herm_F = inv(F');
 	S = de2bi(0 : 2^N - 1);
-	S(S == 0) = -1;
+	S(S == 0) = -1; % BPSK mapping
 	S = S.';  % всевозможные комбинации символов для BPSK
 	CS = C * S;
 
