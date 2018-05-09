@@ -1,0 +1,4 @@
+gr-learn/docs/* linguist-vendored
+gr-sefdm/docs/* linguist-vendored
+gr-learn/python/* linguist-vendored
+gr-sefdm/python/* linguist-vendored
