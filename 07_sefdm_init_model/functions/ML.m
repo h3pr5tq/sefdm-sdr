@@ -1,4 +1,4 @@
-function [ bit ] = ML( R )
+function [ S_est ] = ML( R )
 % R - матрица со статистиками;
 %   каждый столбец соответствует одному отдельному SEFDM-символу
 %
@@ -19,7 +19,7 @@ function [ bit ] = ML( R )
 	[~, min_index] = min(metric);
 	S_est = S(:, min_index);
 
-	bit = real(S_est) <= 0; % BPSK de-mapping
+% 	bit = real(S_est) <= 0; % BPSK de-mapping
 
 
 % 	% ML детектор (Внимание! Алгоритм зависит от используемого демодулятора)

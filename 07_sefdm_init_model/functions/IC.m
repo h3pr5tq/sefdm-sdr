@@ -1,4 +1,4 @@
-function [ bit ] = IC(R)
+function [ S_est ] = IC(R)
 % R - матрица со статистиками;
 %   каждый столбец соответствует одному отдельному SEFDM-символу
 % 
@@ -13,11 +13,8 @@ function [ bit ] = IC(R)
 	m = N_subcarrier;
 	S_est(m, :) = R(m, :) / triu_C(m, m);
 
-	% Slicing == bpsk de-mapping
-	index = real(S_est(m, :)) <= 0;
-	S_est(m,  index) = -1; 
-	S_est(m, ~index) =  1;
-
+	% Slicing
+	S_est(m, :) = slicing( S_est(m, :) );
 
 	% Остальные итерации
 	for m = N_subcarrier - 1 : -1 : 1
@@ -27,13 +24,11 @@ function [ bit ] = IC(R)
 
 		S_est(m, :) = 1 / triu_C(m, m) * (R(m, :) - summation);
 
-		index = real(S_est(m, :)) <= 0;
-		S_est(m,  index) = -1;
-		S_est(m, ~index) =  1;
+		S_est(m, :) = slicing( S_est(m, :) );
 
 	end
 
-	bit = real(S_est) <= 0;
+% 	bit = real(S_est) <= 0;
 
 
 % 	% IC детектор (Внимание! Алгоритм зависит от используемого демодулятора)
@@ -67,5 +62,4 @@ function [ bit ] = IC(R)
 
 
 end
-
 

@@ -1,8 +1,8 @@
-function [ bit ] = MF(R)
+function [ S_est ] = MF(R)
 % R - матрица со статистиками;
 %   каждый столбец соответствует одному отдельному SEFDM-символу
 % 
-	bit = real(R) <= 0; % BPSK de-mapping
+	S_est = slicing(R);
 
 end
 
