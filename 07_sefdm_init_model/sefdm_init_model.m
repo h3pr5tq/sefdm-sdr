@@ -17,11 +17,11 @@ path(path, '../02_ofdm_phy_802_11a_model/ofdm_phy_802_11a/');
 
 %%
 % Исходные данные
-alfa         = 4 / 5; % 0.8
-N_subcarrier = 16;
-EbNo         = 0 : 2 : 12; % дБ
+alfa         = 13 / 16; % 0.8
+N_subcarrier = 26;
+EbNo         = 0 : 2 : 10; % дБ
 N_iter       = 1e3; % кол-во итераций для получения маленьких BER
-W            = 2048; % кол-во символов обрабатываемых за одну итерацию
+W            = 1024; % кол-во символов обрабатываемых за одну итерацию
 DFT_size     = N_subcarrier / alfa;
 
 modulation = 1; % 1 - BPSK or 2 - QPSK

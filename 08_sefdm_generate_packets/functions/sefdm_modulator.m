@@ -1,5 +1,6 @@
 function [ sefdm_sym ] = sefdm_modulator( modulation_sym, ...
-                                          alfa, IFFT_size, right_GI_len, left_GI_len )
+                                          alfa, IFFT_size, right_GI_len, left_GI_len, ...
+                                          varargin )
 % @modulation_sym - 1d или 2d массив с модуляционными символами
 %   Если 2d, то каждый столбец будет рассматриваться как отдельный sefdm-символ
 %   (размер должен быть согласован с @alfa, @IFFT_size, @right_GI_len и @left_GI_len)
@@ -21,12 +22,26 @@ function [ sefdm_sym ] = sefdm_modulator( modulation_sym, ...
 %     24/32 == 12/16 == 3/4 == 0.7500
 %     ...
 %
-%   Если alfa == 1, то будут сгенерированы ofdm-символы
-%   ( их длительность больше чем у sefdm-символов,
-%     но в плане поднесущих/СПЕКТРА ofdm-символ аналогичен sefdm-символу )
+% С помощью данной функции также возможно генерация OFDM-символов, по спектру аналогичному
+% sefdm-символу, но имеющего большую длительность (это достигается если не делать усечение после IFFT)
+% Для генерации такого ofdm-символа в функцию необходимо в качестве последнего аргумента
+% передать строку 'ofdm_mode', при этом @alfa, @IFFT_size, @right_GI_len и @left_GI_len остаются
+% такими же, как и при генерации sefdm-символов
 
 	%%
 	%
+	if nargin == 5
+		ofdm_mode = false;
+	elseif nargin == 6
+		if strcmp(varargin{1}, 'ofdm_mode');
+			ofdm_mode = true;
+		else
+			error('Bad last input argument');
+		end
+	else
+		error('Bad number of input arguments');
+	end
+
 	global N_right_inf_subcarr;
 	global N_left_inf_subcarr;
 
@@ -35,7 +50,7 @@ function [ sefdm_sym ] = sefdm_modulator( modulation_sym, ...
 
 	N = IFFT_size * alfa; % Кол-во поднесущих без "Add zero"
 	assert( N - floor(N) == 0 && ...
-	        (alfa > 0 && alfa <= 1), 'Bad @alfa' );
+	        (alfa > 0 && alfa < 1), 'Bad @alfa' );
 
 	N_inf = N - right_GI_len - left_GI_len - 1; % Кол-во поднесущих под информацию (modulation_symbol)
 	assert( N_inf > 1, 'Need change alfa or right/left GI len');
@@ -69,6 +84,10 @@ function [ sefdm_sym ] = sefdm_modulator( modulation_sym, ...
 	];
 
 	assert( size(sefdm_sym, 1) == IFFT_size );
+
+	if ofdm_mode == true
+		N = IFFT_size;
+	end
 
 	sefdm_sym = ifft(sefdm_sym, IFFT_size);
 	sefdm_sym = sefdm_sym(1 : N, :); % усекаем
