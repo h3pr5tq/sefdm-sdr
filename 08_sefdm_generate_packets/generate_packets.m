@@ -20,11 +20,11 @@ path(path, '../02_ofdm_phy_802_11a_model/ofdm_phy_802_11a/');
 
 save_IQ = true; % Сохранять в файл сгенерированный сигнал или нет
 
-pckt_n       = 1; % Кол-во пакетов
+pckt_n       = 10000; % Кол-во пакетов
 pckt_n_zeros = 0; % Кол-во нулей между пакетами
 
 hdr_n_sym  = 2; % Кол-во ofdm-символов в заголовке (для channel estimation)
-hdr_len_cp = 8; % Длина CP у ofdm-символов
+hdr_len_cp = 6; % Длина CP у ofdm-символов
 
 pld_n_sym  = 20; % Кол-во sefdm-символов в полезной нагрузке
 pld_len_cp = 6; % Длина CP у sefdm-символов
@@ -47,6 +47,8 @@ else
 	error('Bad @sym_modulation');
 end
 
+sefdm_init(sym_ifft_size, alfa, sym_len_right_gi, sym_len_left_gi, modulation);
+
 %%
 % Формирование полезной нагрузки пакета
 load(filename_bits);
@@ -57,8 +59,8 @@ clear bit;
 
 tx_modulation_sym = ConstellationMap(tx_bit, modulation); % Modulation Mapping
 
-tx_sefdm_sym = sefdm_modulator(tx_modulation_sym, ...
-	alfa, sym_ifft_size, sym_len_right_gi, sym_len_left_gi); % Generate SEFDM-symbols
+tx_sefdm_sym = sefdm_IFFT( sefdm_allocate_subcarriers(tx_modulation_sym, 'tx'), ...
+                           'sefdm' ); % Generate SEFDM-symbols
 
 tx_cp_sefdm_sym = sefdm_add_cp(tx_sefdm_sym, pld_len_cp); % Add CP
 
@@ -81,9 +83,8 @@ clear bit;
 
 pilot_modulation_sym = ConstellationMap(pilot_bit, pilot_modulation); % Modulation Mapping
 
-pilot_ofdm_sym = sefdm_modulator(pilot_modulation_sym, ...
-	alfa, sym_ifft_size, sym_len_right_gi, sym_len_left_gi, ...
-    'ofdm_mode'); % Generate OFDM-symbols
+pilot_ofdm_sym = sefdm_IFFT( sefdm_allocate_subcarriers(pilot_modulation_sym, 'tx'), ...
+                             'ofdm' ); % Generate OFDM-symbols
 
 pilot_cp_ofdm_sym = sefdm_add_cp(pilot_ofdm_sym, hdr_len_cp); % Add CP
 
@@ -93,9 +94,8 @@ header = reshape(pilot_cp_ofdm_sym, 1, (sym_ifft_size + hdr_len_cp) * hdr_n_sym)
 % Формирование OFDM-символа, содержащего порядковый номер пакета
 no_bit = de2bi(1 : pckt_n, sym_n_inf, 'left-msb').';
 no_modulation_sym = ConstellationMap(no_bit, 1); % Modulation Mapping
-no_ofdm_sym = sefdm_modulator(no_modulation_sym, ...
-	alfa, sym_ifft_size, sym_len_right_gi, sym_len_left_gi, ...
-	'ofdm_mode'); % Generate OFDM-symbols
+no_ofdm_sym = sefdm_IFFT( sefdm_allocate_subcarriers(no_modulation_sym, 'tx'), ...
+                          'ofdm' ); % Generate OFDM-symbol
 pckt_no = sefdm_add_cp(no_ofdm_sym, hdr_len_cp).'; % Add CP
 
 %%

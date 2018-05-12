@@ -32,7 +32,7 @@ N_inf = N - right_GI_len - left_GI_len - 1; % Кол-во поднесущих �
 
 %%
 % Моделирование ...
-form_const_for_detection_algorithm(N, N, alfa, modulation);
+sefdm_init(IFFT_size, alfa, right_GI_len, left_GI_len, modulation)
 
 % Генерируем информацию
 tx_bit = randi([0 1], modulation * N_inf * W, 1);
@@ -42,8 +42,8 @@ tx_bit = reshape(tx_bit, modulation * N_inf, W);
 tx_modulation_sym = ConstellationMap(tx_bit, modulation);
 
 % SEFDM Tx
-tx_sefdm_sym = sefdm_modulator(tx_modulation_sym, ...
-	alfa, IFFT_size, right_GI_len, left_GI_len);
+tx_sefdm_sym = sefdm_IFFT( sefdm_allocate_subcarriers(tx_modulation_sym, 'tx'), 'sefdm' );
+tx_sefdm_sym = sefdm_add_cp( tx_sefdm_sym, 0 );
 
 % График энергетического спектра
 tx_sefdm_stream = reshape(tx_sefdm_sym, 1, []);
@@ -74,13 +74,14 @@ for i = 1 : length(EbNo)
 
                 % SEFDM Rx
 				% MF демодулятор (получение статистик R) // Ahmed, p.115+ // Grammenos, p. 125+
-				R = sefdm_MF_demodulator(rx_sefdm_sym, alfa, IFFT_size);
+				rx_sefdm_sym = sefdm_del_cp(rx_sefdm_sym, 0);
+				R = sefdm_FFT(rx_sefdm_sym, 'sefdm');
 
 				% Детектирование
 				rx_modulation_sym = detection_algorithm(R);
 
 				% Извлечение информационных поднесущих с учётом защитных интервалов по частоте
-				rx_modulation_sym = sefdm_post_demodulator(rx_modulation_sym);
+				rx_modulation_sym = sefdm_allocate_subcarriers(rx_modulation_sym, 'rx');
 
 				% De-mapping (hard desicion)
 				rx_bit = ConstellationDemap(rx_modulation_sym, modulation);

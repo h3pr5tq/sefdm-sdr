@@ -1,12 +1,13 @@
 function [ sefdm_sym ] = sefdm_del_cp( cp_sefdm_sym, cp_len )
 % Удаляет CP
 %
-% @cp_sefdm_sym - 1d или 2d массив с sefdm-символами+CP
+% @cp_sefdm_sym - 1d столбец или 2d массив с sefdm-символами+CP
 %   Если 2d, то каждый столбец будет рассматриваться как отдельный sefdm-символ+CP
 %
 % @cp_len - длина Cyclic Prefix'а
 
 	if cp_len == 0
+		sefdm_sym = cp_sefdm_sym;
 		return;
 	end
 	

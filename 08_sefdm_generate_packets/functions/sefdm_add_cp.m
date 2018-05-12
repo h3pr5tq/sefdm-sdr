@@ -1,12 +1,13 @@
 function [ cp_sefdm_sym ] = sefdm_add_cp( sefdm_sym, cp_len )
 % Добавляет CP к sefdm-символу
 %
-% @sefdm_sym - 1d или 2d массив с sefdm-символами
+% @sefdm_sym - 1d столбец или 2d массив с sefdm-символами
 %   Если 2d, то каждый столбец будет рассматриваться как отдельный sefdm-символ
 %
 % @cp_len - длина Cyclic Prefix'а
 
 	if cp_len == 0
+		cp_sefdm_sym = sefdm_sym;
 		return;
 	end
 	
