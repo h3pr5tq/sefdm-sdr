@@ -40,7 +40,8 @@ namespace gr {
       const int    d_summation_window;
       const int    d_signal_offset;
       const float  d_detection_threshold;
-      const bool   d_use_recursive_algorithm;
+      const int    d_detect_thr_cntr_max_val;
+//      const bool   d_use_recursive_algorithm;
       const float  d_eps;
 
       const std::string  d_tag_key;
@@ -67,7 +68,8 @@ namespace gr {
       ieee_802_11a_preamble_detection_impl(int summation_window,
                                            int signal_offset,
                                            float detection_threshold,
-                                           bool use_recursive_algorithm,
+                                           int detect_thr_cntr_max_val,
+//                                           bool use_recursive_algorithm,
                                            float eps,
                                            const std::string& tag_key,
                                            int packet_len,

@@ -49,7 +49,8 @@ namespace gr {
       static sptr make(int summation_window,
                        int signal_offset,
                        float detection_threshold,
-                       bool use_recursive_algorithm,
+                       int detect_thr_cntr_max_val,
+//                       bool use_recursive_algorithm,
                        float eps,
                        const std::string& tag_key,  // Имя тэга, будет использовать последующими блоками
                        int packet_len, // Длина пакета

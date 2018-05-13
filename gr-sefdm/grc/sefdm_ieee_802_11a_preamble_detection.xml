@@ -4,7 +4,7 @@
   <key>sefdm_ieee_802_11a_preamble_detection</key>
   <category>[sefdm]</category>
   <import>import sefdm</import>
-  <make>sefdm.ieee_802_11a_preamble_detection($L, $D, $Thr, $Algrthm, $Eps, $TagKey, $PacketLen, $Margin)</make>
+  <make>sefdm.ieee_802_11a_preamble_detection($L, $D, $Thr, $ThrCntrMax, $Eps, $TagKey, $PacketLen, $Margin)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
@@ -30,8 +30,15 @@
     <value>0.7</value>
     <type>float</type>
   </param>
-
+  
   <param>
+    <name>Detect Thr Exceed Cntr Max</name>
+    <key>ThrCntrMax</key>
+    <value>60</value>
+    <type>int</type>
+  </param>
+
+  <!-- <param>
     <name>Use Recursive Algorithm</name>
     <key>Algrthm</key>
     <value>False</value>
@@ -45,7 +52,7 @@
         <name>No</name>
         <key>False</key>
     </option>
-  </param>
+  </param> -->
   
   <param>
     <name>Epsilon (autocorr and energy too small)</name>

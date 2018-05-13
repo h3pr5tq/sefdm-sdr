@@ -22,6 +22,8 @@
 #include "config.h"
 #endif
 
+//#include <cmath>
+
 #include <gnuradio/io_signature.h>
 #include <gnuradio/fft/fft.h>
 #include "ieee_802_11a_synchronization_impl.h"

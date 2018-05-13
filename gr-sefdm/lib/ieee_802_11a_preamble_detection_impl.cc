@@ -34,7 +34,8 @@ namespace gr {
     ieee_802_11a_preamble_detection::make(int summation_window,
                                           int signal_offset,
                                           float detection_threshold,
-                                          bool use_recursive_algorithm,
+                                          int detect_thr_cntr_max_val,
+//                                          bool use_recursive_algorithm,
                                           float eps,
                                           const std::string& tag_key,
                                           int packet_len,
@@ -42,7 +43,9 @@ namespace gr {
     {
       return gnuradio::get_initial_sptr
         (new ieee_802_11a_preamble_detection_impl(summation_window, signal_offset, detection_threshold,
-                                                  use_recursive_algorithm, eps,
+                                                  detect_thr_cntr_max_val,
+//                                                  use_recursive_algorithm,
+                                                  eps,
                                                   tag_key, packet_len, margin));
     }
 
@@ -52,7 +55,8 @@ namespace gr {
     ieee_802_11a_preamble_detection_impl::ieee_802_11a_preamble_detection_impl(int summation_window,
                                                                                int signal_offset,
                                                                                float detection_threshold,
-                                                                               bool use_recursive_algorithm,
+                                                                               int detect_thr_cntr_max_val,
+//                                                                               bool use_recursive_algorithm,
                                                                                float eps,
                                                                                const std::string& tag_key,
                                                                                int packet_len,
@@ -63,7 +67,8 @@ namespace gr {
         d_summation_window(summation_window),
         d_signal_offset(signal_offset),
         d_detection_threshold(detection_threshold),
-        d_use_recursive_algorithm(use_recursive_algorithm),
+        d_detect_thr_cntr_max_val(detect_thr_cntr_max_val),
+//        d_use_recursive_algorithm(use_recursive_algorithm),
         d_eps(eps),
         d_tag_key(tag_key),
         d_packet_len_with_margin(packet_len + margin),
@@ -110,10 +115,12 @@ namespace gr {
       // П Р Е Д П О Л А Г А Е М   Ч Т О   Fd  Н А  Tx и Rx  С О В П А Д А Ю Т
       // UPSAMPLING на Rx отсутствует
 
-      if (d_use_recursive_algorithm == true) { // Р Е К У Р С И В Н Ы Й   А Л Г О Р И Т М   О Б Н А Р У Ж Е Н И Я
+//      if (d_use_recursive_algorithm == true) { // Р Е К У Р С И В Н Ы Й   А Л Г О Р И Т М   О Б Н А Р У Ж Е Н И Я
 
         int  i; // for loop ==> (i + 1) is number consume/produce items
         int  skip_prmbl_cntr = 0; // cntr for skip preamble
+        int  detect_thr_exceed_cntr = 0; // cntr - сколько раз подряд превышен порог
+        int  first_detect_thr_exceed__i;
 
         // i = 0 (first iteration)
         i = 0;
@@ -125,34 +132,52 @@ namespace gr {
 
         if ( detection_metric[i] > d_detection_threshold ) {
 
-          // Обработать ситуацию когда треугольник который надо скипнуть
-          // полностью не вмещается во входном буфере --> его обработать при следующем вызове general_work()
-          if (i + PREAMBLE_LEN >= noutput_items) {
-            debug_print(noutput_items, ninput_items[0]);
+            // Обработать ситуацию когда треугольник который надо скипнуть
+            // полностью не вмещается во входном буфере --> его обработать при следующем вызове general_work()
+            if (i + PREAMBLE_LEN + d_detect_thr_cntr_max_val >= noutput_items) {
+              debug_print(noutput_items, ninput_items[0]);
 #if HANDLE_PRMBL_NEXT_WORK_CALL == 1
-            consume_each (i + 1); // 1
-            return i + 1; // 1
+              consume_each (i + 1); // 1
+              return i + 1; // 1
 #endif
-          }
+            }
 
-          // Тэг для @out
-          add_item_tag(0, // Port number
-                       nitems_written(0) + i, // Offset (абсолютное смещение)
-                       pmt::mp(d_tag_key), // Key
-                       pmt::mp(d_packet_len_with_margin) // Value
-          );
+            // Получить индекс отсчёта/метрики, на котором первый раз произошло превышение порога
+            if (detect_thr_exceed_cntr == 0) {
+              first_detect_thr_exceed__i = i;
+            }
 
-          // Тэг для @detection_metric
-          add_item_tag( 1, nitems_written(1) + i, pmt::mp("Detect Preamble"), pmt::mp(detection_metric[i]) );
+            detect_thr_exceed_cntr++;
 
-          skip_prmbl_cntr = PREAMBLE_LEN - 1; // Для скипа "треугольник"
+            if (detect_thr_exceed_cntr > d_detect_thr_cntr_max_val) {
 
-          d_detected_pckt_num++;
+                // Обнаружили преамбулу
+                d_detected_pckt_num++;
+                skip_prmbl_cntr = PREAMBLE_LEN;
+                detect_thr_exceed_cntr = 0;
+
+                // Тэг для @out
+                add_item_tag(0, // Port number
+                             nitems_written(0) + first_detect_thr_exceed__i, // Offset (абсолютное смещение)
+                             pmt::mp(d_tag_key), // Key
+                             pmt::mp(d_packet_len_with_margin) // Value
+                );
+
+                // Тэг для @detection_metric
+                add_item_tag( 1,
+                              nitems_written(1) + first_detect_thr_exceed__i,
+                              pmt::mp("Detect Preamble"),
+                              pmt::mp(detection_metric[first_detect_thr_exceed__i]) );
+
 #ifdef CMAKE_BUILD_TYPE_DEBUG
-          std::cout << "number of detected packets: " << d_detected_pckt_num << " : " << nitems_read(0) + i + 1 << std::endl;
+                std::cout << "number of detected packets: " <<
+                    d_detected_pckt_num << " : " <<
+                    nitems_read(0) + first_detect_thr_exceed__i + 1 << std::endl;
 #endif
+            }
         }
 
+        skip_prmbl_cntr--;
         // i = 1 ... (recursive algorithm)
         for (i = 1; i < noutput_items; ++i) {
 
@@ -178,73 +203,102 @@ namespace gr {
           if ( detection_metric[i] > d_detection_threshold &&
                skip_prmbl_cntr <= 0 ) {
 
-            // Обработать ситуацию когда треугольник который надо скипнуть
-            // полностью не вмещается во входном буфере --> его обработать при следующем вызове general_work()
-            //
-            // Мб пока убрать??
-            if (i + PREAMBLE_LEN >= noutput_items) {
-              debug_print(noutput_items, ninput_items[0]);
+                // Обработать ситуацию когда треугольник который надо скипнуть
+                // полностью не вмещается во входном буфере --> его обработать при следующем вызове general_work()
+                //
+                // Мб пока убрать??
+                if (i + PREAMBLE_LEN + d_detect_thr_cntr_max_val >= noutput_items) {
+                    debug_print(noutput_items, ninput_items[0]);
 #if HANDLE_PRMBL_NEXT_WORK_CALL == 1
-              consume_each (i + 1);
-              return i + 1;
+                    consume_each (i + 1);
+                    return i + 1;
 #endif
-            }
+                }
 
-            add_item_tag( 0, nitems_written(0) + i, pmt::mp(d_tag_key), pmt::mp(d_packet_len_with_margin) );
-            add_item_tag( 1, nitems_written(1) + i, pmt::mp("Detect Preamble"), pmt::mp(detection_metric[i]) );
+                // Получить индекс отсчёта/метрики, на котором первый раз произошло превышение порога
+                if (detect_thr_exceed_cntr == 0) {
+                    first_detect_thr_exceed__i = i;
+                }
 
-            skip_prmbl_cntr = PREAMBLE_LEN; // Для скипа "треугольник"
+                detect_thr_exceed_cntr++;
 
-            d_detected_pckt_num++;
+                if (detect_thr_exceed_cntr > d_detect_thr_cntr_max_val) {
+
+                    // Обнаружили преамбулу
+                    d_detected_pckt_num++;
+                    skip_prmbl_cntr = PREAMBLE_LEN;
+                    detect_thr_exceed_cntr = 0;
+
+                    // Тэг для @out
+                    add_item_tag(0, // Port number
+                                 nitems_written(0) + first_detect_thr_exceed__i, // Offset (абсолютное смещение)
+                                 pmt::mp(d_tag_key), // Key
+                                 pmt::mp(d_packet_len_with_margin) // Value
+                    );
+
+                    // Тэг для @detection_metric
+                    add_item_tag( 1,
+                                  nitems_written(1) + first_detect_thr_exceed__i,
+                                  pmt::mp("Detect Preamble"),
+                                  pmt::mp(detection_metric[first_detect_thr_exceed__i]) );
+
 #ifdef CMAKE_BUILD_TYPE_DEBUG
-            std::cout << "number of detected packets: " << d_detected_pckt_num << " : " << nitems_read(0) + i + 1 << std::endl;
-#endif
-          }
-          skip_prmbl_cntr--;
-
-        }
-
-      } else { // О Б Ы Ч Н Ы Й   А Л Г О Р И Т М
-
-        int  i; // for loop ==> (i + 1) is number consume/produce items
-        int  skip_prmbl_cntr = 0; // cntr for skip preamble
-
-        gr_complex  autocorr;
-        float       energy;
-
-        for (i = 0; i < noutput_items; ++i) {
-
-            autocorr = calc_autocorr(without_dc_in + i);
-            energy   = calc_energy(without_dc_in + i);
-
-            detection_metric[i] = calc_detection_metric(autocorr, energy);
-            out[i]              = in[i];
-
-            if ( detection_metric[i] > d_detection_threshold &&
-                 skip_prmbl_cntr <= 0 ) {
-
-              if (i + PREAMBLE_LEN >= noutput_items) {
-                debug_print(noutput_items, ninput_items[0]);
-#if HANDLE_PRMBL_NEXT_WORK_CALL == 1
-                consume_each (i + 1);
-                return i + 1;
+                    std::cout << "number of detected packets: " <<
+                        d_detected_pckt_num << " : " <<
+                        nitems_read(0) + first_detect_thr_exceed__i + 1 << std::endl;
 #endif
               }
 
-              add_item_tag( 0, nitems_written(0) + i, pmt::mp(d_tag_key), pmt::mp(d_packet_len_with_margin) );
-              add_item_tag( 1, nitems_written(1) + i, pmt::mp("Detect Preamble"), pmt::mp(detection_metric[i]) );
+            } else {
 
-              skip_prmbl_cntr = PREAMBLE_LEN; // Для скипа "треугольник"
-
-              d_detected_pckt_num++;
-#ifdef CMAKE_BUILD_TYPE_DEBUG
-              std::cout << "number of detected packets: " << d_detected_pckt_num << " : " << nitems_read(0) + i + 1 << std::endl;
-#endif
+                detect_thr_exceed_cntr = 0;
             }
+
             skip_prmbl_cntr--;
+
         }
 
-      }
+//      } else { // О Б Ы Ч Н Ы Й   А Л Г О Р И Т М
+//
+//        int  i; // for loop ==> (i + 1) is number consume/produce items
+//        int  skip_prmbl_cntr = 0; // cntr for skip preamble
+//
+//        gr_complex  autocorr;
+//        float       energy;
+//
+//        for (i = 0; i < noutput_items; ++i) {
+//
+//            autocorr = calc_autocorr(without_dc_in + i);
+//            energy   = calc_energy(without_dc_in + i);
+//
+//            detection_metric[i] = calc_detection_metric(autocorr, energy);
+//            out[i]              = in[i];
+//
+//            if ( detection_metric[i] > d_detection_threshold &&
+//                 skip_prmbl_cntr <= 0 ) {
+//
+//              if (i + PREAMBLE_LEN >= noutput_items) {
+//                debug_print(noutput_items, ninput_items[0]);
+//#if HANDLE_PRMBL_NEXT_WORK_CALL == 1
+//                consume_each (i + 1);
+//                return i + 1;
+//#endif
+//              }
+//
+//              add_item_tag( 0, nitems_written(0) + i, pmt::mp(d_tag_key), pmt::mp(d_packet_len_with_margin) );
+//              add_item_tag( 1, nitems_written(1) + i, pmt::mp("Detect Preamble"), pmt::mp(detection_metric[i]) );
+//
+//              skip_prmbl_cntr = PREAMBLE_LEN; // Для скипа "треугольник"
+//
+//              d_detected_pckt_num++;
+//#ifdef CMAKE_BUILD_TYPE_DEBUG
+//              std::cout << "number of detected packets: " << d_detected_pckt_num << " : " << nitems_read(0) + i + 1 << std::endl;
+//#endif
+//            }
+//            skip_prmbl_cntr--;
+//        }
+//
+//      }
 
       // Tell runtime system how many input items we consumed on
       // each input stream.
