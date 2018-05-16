@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<block>
+  <name>header_synchronization</name>
+  <key>sefdm_header_synchronization</key>
+  <category>[sefdm]</category>
+  <import>import sefdm</import>
+  <make>sefdm.header_synchronization($HdrNoPldLen,
+                                           $Hdr_Nsym, $Hdr_LenCp,
+                                           $Pld_Nsym, $Pld_LenCp,
+                                           $Sym_FftSize, $Sym_SefdmLen, $Sym_RightGiLen, $Sym_LeftGILen)</make>
+  <!-- Make one 'param' node for every Parameter you want settable from the GUI.
+       Sub-nodes:
+       * name
+       * key (makes the value accessible as $keyname, e.g. in the make node)
+       * type -->
+  <param>
+    <name>Hdr+No+Pld Len</name>
+    <key>HdrNoPldLen</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Hdr: Num Sym</name>
+    <key>Hdr_Nsym</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Hdr: CP Len</name>
+    <key>Hdr_LenCp</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Pld: Num Sym</name>
+    <key>Pld_Nsym</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Pld: CP Len</name>
+    <key>Pld_LenCp</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Sym: FFT Size</name>
+    <key>Sym_FftSize</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Sym: SEFDM Sym Len</name>
+    <key>Sym_SefdmLen</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Sym: Right GI Len</name>
+    <key>Sym_RightGiLen</key>
+    <type>int</type>
+  </param>
+  
+  <param>
+    <name>Sym: Left GI Len</name>
+    <key>Sym_LeftGILen</key>
+    <type>int</type>
+  </param>
+
+  <!-- Make one 'sink' node per input. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <sink>
+    <name>sefdm_hdr_synch_in</name>
+    <type>message</type>
+  </sink>
+
+  <!-- Make one 'source' node per output. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <source>
+    <name>sefdm_hdr_synch_out</name>
+    <type>message</type>
+  </source>
+</block>

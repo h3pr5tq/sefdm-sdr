@@ -93,6 +93,60 @@
     </param>
     <param>
       <key>_coordinate</key>
+      <value>(848, 12)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>hdr_len_cp</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>6</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(752, 12)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>hdr_n_sym</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>6</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
       <value>(312, 156)</value>
     </param>
     <param>
@@ -116,7 +170,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -143,7 +197,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -171,6 +225,87 @@
     <param>
       <key>_enabled</key>
       <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(848, 76)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>pld_len_cp</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>6</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(752, 76)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>pld_n_sym</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>20</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(752, 212)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>prmbl_hdr_no_payload_len</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>320 + hdr_n_sym * (sym_fft_size + hdr_len_cp) + (sym_fft_size + hdr_len_cp) + pld_n_sym * (sym_sefdm_len+ pld_len_cp)</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -213,7 +348,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>29500</value>
+      <value>295</value>
     </param>
   </block>
   <block>
@@ -240,7 +375,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>450e6</value>
+      <value>2290e6</value>
     </param>
   </block>
   <block>
@@ -267,7 +402,142 @@
     </param>
     <param>
       <key>value</key>
-      <value>10e6</value>
+      <value>4e6</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(704, 140)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>sym_fft_size</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>32</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1024, 140)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>sym_len_left_gi</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>3</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(1144, 140)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>sym_len_right_gi</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>2</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(936, 140)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>sym_n_inf</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>20</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(816, 140)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>sym_sefdm_len</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>26</value>
     </param>
   </block>
   <block>
@@ -290,7 +560,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>file</key>
@@ -298,7 +568,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(592, 916)</value>
+      <value>(256, 924)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -341,7 +611,7 @@
     </param>
     <param>
       <key>file</key>
-      <value>/home/ivan/Documents/Diplom/Signals/RxBaseband_ComplexFloat32_bin/rx_randi_20ofdm_20000pckt_15.dat</value>
+      <value>/home/ivan/Documents/Signals/1_rx_sefdm_11.05.18/truncate_to_one_packet/tr_rx_sefdm__pckt_10000_1000__hdr_6_6__pld_20_6__sym_32_26_20_3_2_bpsk__.dat</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -369,7 +639,7 @@
     </param>
     <param>
       <key>repeat</key>
-      <value>False</value>
+      <value>True</value>
     </param>
     <param>
       <key>vlen</key>
@@ -392,11 +662,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1064, 760)</value>
+      <value>(1040, 792)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -470,7 +740,7 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -674,11 +944,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(320, 964)</value>
+      <value>(176, 900)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -717,7 +987,7 @@
     </param>
     <param>
       <key>bb_gain0</key>
-      <value>40</value>
+      <value>38</value>
     </param>
     <param>
       <key>bw0</key>
@@ -741,7 +1011,7 @@
     </param>
     <param>
       <key>if_gain0</key>
-      <value>32</value>
+      <value>40</value>
     </param>
     <param>
       <key>iq_balance_mode0</key>
@@ -2132,7 +2402,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1064, 884)</value>
+      <value>(336, 900)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -2179,7 +2449,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1064, 948)</value>
+      <value>(336, 956)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -2522,11 +2792,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(320, 900)</value>
+      <value>(120, 884)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -2881,7 +3151,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(784, 260)</value>
+      <value>(1032, 332)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -2889,7 +3159,7 @@
     </param>
     <param>
       <key>_rotation</key>
-      <value>180</value>
+      <value>0</value>
     </param>
     <param>
       <key>grid</key>
@@ -3615,6 +3885,81 @@
     </param>
   </block>
   <block>
+    <key>sefdm_header_synchronization</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(688, 740)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>HdrNoPldLen</key>
+      <value>prmbl_hdr_no_payload_len - 320</value>
+    </param>
+    <param>
+      <key>Hdr_LenCp</key>
+      <value>hdr_len_cp</value>
+    </param>
+    <param>
+      <key>Hdr_Nsym</key>
+      <value>hdr_n_sym</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>sefdm_header_synchronization_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>Pld_LenCp</key>
+      <value>pld_len_cp</value>
+    </param>
+    <param>
+      <key>Pld_Nsym</key>
+      <value>pld_n_sym</value>
+    </param>
+    <param>
+      <key>Sym_FftSize</key>
+      <value>sym_fft_size</value>
+    </param>
+    <param>
+      <key>Sym_LeftGILen</key>
+      <value>sym_len_left_gi</value>
+    </param>
+    <param>
+      <key>Sym_RightGiLen</key>
+      <value>sym_len_right_gi</value>
+    </param>
+    <param>
+      <key>Sym_SefdmLen</key>
+      <value>sym_sefdm_len</value>
+    </param>
+  </block>
+  <block>
     <key>sefdm_ieee_802_11a_ofdm_symbol_demodulation</key>
     <param>
       <key>alias</key>
@@ -3630,11 +3975,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(632, 780)</value>
+      <value>(240, 900)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3676,6 +4021,10 @@
       <value></value>
     </param>
     <param>
+      <key>ThrCntrMax</key>
+      <value>60</value>
+    </param>
+    <param>
       <key>Thr</key>
       <value>0.6</value>
     </param>
@@ -3709,7 +4058,7 @@
     </param>
     <param>
       <key>PacketLen</key>
-      <value>prmbl_payload_len</value>
+      <value>prmbl_hdr_no_payload_len</value>
     </param>
     <param>
       <key>Margin</key>
@@ -3727,10 +4076,6 @@
       <key>L</key>
       <value>144</value>
     </param>
-    <param>
-      <key>Algrthm</key>
-      <value>True</value>
-    </param>
   </block>
   <block>
     <key>sefdm_ieee_802_11a_synchronization</key>
@@ -3741,6 +4086,10 @@
     <param>
       <key>CTS_segmentLen</key>
       <value>160</value>
+    </param>
+    <param>
+      <key>ChannelEst_isMake</key>
+      <value>False</value>
     </param>
     <param>
       <key>comment</key>
@@ -3756,7 +4105,7 @@
     </param>
     <param>
       <key>FFS_isMake</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
       <key>FFS_offset</key>
@@ -3776,7 +4125,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(312, 732)</value>
+      <value>(296, 700)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -3787,10 +4136,6 @@
       <value>sefdm_ieee_802_11a_synchronization_0</value>
     </param>
     <param>
-      <key>Payload_GILen</key>
-      <value>payload_gi_len</value>
-    </param>
-    <param>
       <key>maxoutbuf</key>
       <value>0</value>
     </param>
@@ -3799,12 +4144,8 @@
       <value>0</value>
     </param>
     <param>
-      <key>Payload_subcarrNum</key>
-      <value>payload_subcarr_num</value>
-    </param>
-    <param>
-      <key>Payload_symNum</key>
-      <value>payload_sym_num</value>
+      <key>PacketLen</key>
+      <value>prmbl_hdr_no_payload_len</value>
     </param>
   </block>
   <connection>
@@ -3857,6 +4198,12 @@
   </connection>
   <connection>
     <source_block_id>osmosdr_source_0</source_block_id>
+    <sink_block_id>fir_filter_xxx_0</sink_block_id>
+    <source_key>0</source_key>
+    <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>osmosdr_source_0</source_block_id>
     <sink_block_id>sefdm_ieee_802_11a_preamble_detection_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
@@ -3868,9 +4215,9 @@
     <sink_key>0</sink_key>
   </connection>
   <connection>
-    <source_block_id>sefdm_ieee_802_11a_ofdm_symbol_demodulation_0</source_block_id>
+    <source_block_id>sefdm_header_synchronization_0</source_block_id>
     <sink_block_id>blocks_message_debug_0_0</sink_block_id>
-    <source_key>out2</source_key>
+    <source_key>sefdm_hdr_synch_out</source_key>
     <sink_key>print</sink_key>
   </connection>
   <connection>
@@ -3914,6 +4261,12 @@
     <sink_block_id>sefdm_extract_packets_from_stream_0</sink_block_id>
     <source_key>0</source_key>
     <sink_key>0</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>sefdm_ieee_802_11a_synchronization_0</source_block_id>
+    <sink_block_id>sefdm_header_synchronization_0</sink_block_id>
+    <source_key>out</source_key>
+    <sink_key>sefdm_hdr_synch_in</sink_key>
   </connection>
   <connection>
     <source_block_id>sefdm_ieee_802_11a_synchronization_0</source_block_id>

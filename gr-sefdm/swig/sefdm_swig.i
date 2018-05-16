@@ -14,6 +14,8 @@
 #include "sefdm/ofdm_symbol_demodulation.h"
 #include "sefdm/ieee_802_11a_synchronization.h"
 #include "sefdm/ieee_802_11a_ofdm_symbol_demodulation.h"
+#include "sefdm/header_synchronization.h"
+#include "sefdm/mf_demodulator.h"
 %}
 
 %include "sefdm/ieee_802_11a_preamble_detection.h"
@@ -28,3 +30,7 @@ GR_SWIG_BLOCK_MAGIC2(sefdm, ofdm_symbol_demodulation);
 GR_SWIG_BLOCK_MAGIC2(sefdm, ieee_802_11a_synchronization);
 %include "sefdm/ieee_802_11a_ofdm_symbol_demodulation.h"
 GR_SWIG_BLOCK_MAGIC2(sefdm, ieee_802_11a_ofdm_symbol_demodulation);
+%include "sefdm/header_synchronization.h"
+GR_SWIG_BLOCK_MAGIC2(sefdm, header_synchronization);
+%include "sefdm/mf_demodulator.h"
+GR_SWIG_BLOCK_MAGIC2(sefdm, mf_demodulator);

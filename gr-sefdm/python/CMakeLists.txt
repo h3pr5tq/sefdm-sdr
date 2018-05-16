@@ -47,3 +47,5 @@ GR_ADD_TEST(qa_ieee_802_11a_coarse_time_synch ${PYTHON_EXECUTABLE} ${CMAKE_CURRE
 GR_ADD_TEST(qa_ofdm_symbol_demodulation ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_ofdm_symbol_demodulation.py)
 GR_ADD_TEST(qa_ieee_802_11a_synchronization ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_ieee_802_11a_synchronization.py)
 GR_ADD_TEST(qa_ieee_802_11a_ofdm_symbol_demodulation ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_ieee_802_11a_ofdm_symbol_demodulation.py)
+GR_ADD_TEST(qa_header_synchronization ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_header_synchronization.py)
+GR_ADD_TEST(qa_mf_demodulator ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_mf_demodulator.py)

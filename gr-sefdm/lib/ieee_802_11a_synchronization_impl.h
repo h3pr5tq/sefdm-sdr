@@ -46,15 +46,21 @@ namespace gr {
       const int  d_fts_segment_len;
       const int  d_fts_etalon_seq_len;
 
+      // Channel Estimaton
+      const bool d_channel_est_is_make;
+
+      // Packet Parameters
+      const int d_packet_len;
+
       // Packet Preamble Parameters
       const int  d_prmbl_subcarriers_num;
 
-      // Packet Payload Parameters
-      const int  d_payload_ofdm_sym_num;
-      const int  d_payload_subcarriers_num;
-      const int  d_payload_gi_len;
+//      // Packet Payload Parameters
+//      const int  d_payload_ofdm_sym_num;
+//      const int  d_payload_subcarriers_num;
+//      const int  d_payload_gi_len;
 
-      int  d_prmbl_payload_len;
+      //int  d_prmbl_payload_len;
 
 
       void
@@ -79,7 +85,10 @@ namespace gr {
       ieee_802_11a_synchronization_impl(int cts_segment_len,
                                         bool ffs_is_make, int ffs_offset_from_cts,
                                         int fts_offset_from_cts, int fts_segment_len, int fts_etalon_seq_len,
-                                        int payload_ofdm_sym_num, int payload_subcarriers_num, int payload_gi_len);
+                                        bool channel_est_is_make,
+                                        int packet_len
+//                                        int payload_ofdm_sym_num, int payload_subcarriers_num, int payload_gi_len
+                                        );
       ~ieee_802_11a_synchronization_impl();
 
       // Where all the action really happens

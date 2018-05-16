@@ -103,13 +103,19 @@ namespace gr {
     ieee_802_11a_synchronization::make(int cts_segment_len,
                                        bool ffs_is_make, int ffs_offset_from_cts,
                                        int fts_offset_from_cts, int fts_segment_len, int fts_etalon_seq_len,
-                                       int payload_ofdm_sym_num, int payload_subcarriers_num, int payload_gi_len)
+                                       bool channel_est_is_make,
+                                       int packet_len
+//                                       int payload_ofdm_sym_num, int payload_subcarriers_num, int payload_gi_len
+                                       )
     {
       return gnuradio::get_initial_sptr
         ( new ieee_802_11a_synchronization_impl(cts_segment_len,
                                                 ffs_is_make, ffs_offset_from_cts,
                                                 fts_offset_from_cts, fts_segment_len, fts_etalon_seq_len,
-                                                payload_ofdm_sym_num, payload_subcarriers_num, payload_gi_len) );
+                                                channel_est_is_make,
+                                                packet_len
+//                                                payload_ofdm_sym_num, payload_subcarriers_num, payload_gi_len
+                                                ) );
     }
 
     /*
@@ -118,7 +124,10 @@ namespace gr {
     ieee_802_11a_synchronization_impl::ieee_802_11a_synchronization_impl(int cts_segment_len,
                                                                          bool ffs_is_make, int ffs_offset_from_cts,
                                                                          int fts_offset_from_cts, int fts_segment_len, int fts_etalon_seq_len,
-                                                                         int payload_ofdm_sym_num, int payload_subcarriers_num, int payload_gi_len)
+                                                                         bool channel_est_is_make,
+                                                                         int packet_len
+//                                                                         int payload_ofdm_sym_num, int payload_subcarriers_num, int payload_gi_len
+                                                                         )
       : gr::block("ieee_802_11a_synchronization",
               gr::io_signature::make(0, 0, sizeof(gr_complex)),
               gr::io_signature::make(0, 0, sizeof(gr_complex))),
@@ -139,20 +148,26 @@ namespace gr {
         d_fts_segment_len(fts_segment_len), // Оцениваем по моделированию CTS; данный параметр связан с x // Если брать слишком большой, можем затронуть второй LTS --> получим второй пик, который не нужен
         d_fts_etalon_seq_len(fts_etalon_seq_len), // Коррелируем с первыми 32 отсчётами LTS
 
-        // Packet Preamble Parameters
-        d_prmbl_subcarriers_num(64),
+        // Channel Estimaton
+        d_channel_est_is_make(channel_est_is_make),
 
-        // Packet Payload Parameters
-        d_payload_ofdm_sym_num(payload_ofdm_sym_num),
-        d_payload_subcarriers_num(payload_subcarriers_num),
-        d_payload_gi_len(payload_gi_len)
+        // Packet Parameters
+        d_packet_len(packet_len),
+
+        // Packet Preamble Parameters
+        d_prmbl_subcarriers_num(64)
+
+//        // Packet Payload Parameters
+//        d_payload_ofdm_sym_num(payload_ofdm_sym_num),
+//        d_payload_subcarriers_num(payload_subcarriers_num),
+//        d_payload_gi_len(payload_gi_len)
     {
 
-      d_prmbl_payload_len = 320 + d_payload_ofdm_sym_num * (d_payload_subcarriers_num + d_payload_gi_len);
+      //d_prmbl_payload_len = 320 + d_payload_ofdm_sym_num * (d_payload_subcarriers_num + d_payload_gi_len);
 
       // Check input arguments
       if ( d_cts_segment_len < 1 ||
-           d_cts_segment_len > d_prmbl_payload_len - d_cts_summation_window - d_cts_signal_offset + 2  ) {
+           d_cts_segment_len > d_packet_len - d_cts_summation_window - d_cts_signal_offset + 2  ) {
         throw std::out_of_range( "Bad @d_cts_segment_len" );
       }
 
@@ -176,17 +191,17 @@ namespace gr {
         throw std::out_of_range( "Bad @d_fts_etalon_seq_len" );
       }
 
-      if ( d_payload_ofdm_sym_num < 1 ) {
-        throw std::out_of_range( "Bad @d_payload_ofdm_sym_num" );
-      }
-
-      if ( d_payload_subcarriers_num < 1 ) {
-        throw std::out_of_range( "Bad @d_payload_subcarriers_num" );
-      }
-
-      if ( d_payload_gi_len < 1 || d_payload_gi_len > d_payload_subcarriers_num ) {
-        throw std::out_of_range( "Bad @d_payload_gi_len" );
-      }
+//      if ( d_payload_ofdm_sym_num < 1 ) {
+//        throw std::out_of_range( "Bad @d_payload_ofdm_sym_num" );
+//      }
+//
+//      if ( d_payload_subcarriers_num < 1 ) {
+//        throw std::out_of_range( "Bad @d_payload_subcarriers_num" );
+//      }
+//
+//      if ( d_payload_gi_len < 1 || d_payload_gi_len > d_payload_subcarriers_num ) {
+//        throw std::out_of_range( "Bad @d_payload_gi_len" );
+//      }
 
       message_port_register_in(pmt::mp("in"));
       message_port_register_out(pmt::mp("out"));
@@ -240,8 +255,8 @@ namespace gr {
         gr_complex*  in = pmt::c32vector_writable_elements(pmt::cdr(msg), in_len);
 
         // Проверка размера пакета
-        if ( in_len < d_prmbl_payload_len ) {
-          std::cout << "in_len: " << in_len << "   prmbl+payload_len: " << d_prmbl_payload_len << std::endl;
+        if ( in_len < d_packet_len ) {
+          std::cout << "in_len: " << in_len << "   prmbl + rest of packet len: " << d_packet_len << std::endl;
           throw std::runtime_error( "in_len too small --> will be array array overflow" );
         }
 
@@ -259,42 +274,59 @@ namespace gr {
         int  fts_est = estimate_fine_time_offset(in, cts_est);
         // Проверка на выход за пределны пакета, если сильно ошиблись с оценкой FTS
         // Данная проверка гарантирует, что в @in с учётом fts_est поместится полностью payload
-        if ( in_len - fts_est - 64 - 64 < d_prmbl_payload_len - 320 ) {
+        if ( in_len - fts_est - 64 - 64 < d_packet_len - 320 ) {
 
           std::cout << "we get payload len: " << in_len - (fts_est + 64 + 64) <<
-              "  etalon payload len " << d_prmbl_payload_len - 320 << std::endl;
+              "  etalon payload len " << d_packet_len - 320 << std::endl;
           throw std::runtime_error( "fts_est is very bad --> will be array array overflow" );
+
+          // СДЕЛАТЬ ОТКИДЫВАНИЕ ПАКЕТА, А НЕ ЗАВЕРШЕНИЕ РАБОТЫ БЛОКА
         }
 
         // Channel Freq Response Estimation
-        const std::vector<gr_complex> channel_est = estimate_channel(in, fts_est);
+        std::vector<gr_complex> channel_est(52, gr_complex(0.0f, 0.0f));
+        if (d_channel_est_is_make) {
+            channel_est = estimate_channel(in, fts_est);
+        }
 
-        // Получение массива с полезной нагрузкой (без GI и без Preamble)
-        gr_complex  payload_without_gi[d_payload_ofdm_sym_num * d_payload_subcarriers_num];
-        int  offset          = fts_est + 64 + 64 + d_payload_gi_len;
-        int  sym_with_gi_len = d_payload_subcarriers_num + d_payload_gi_len;
+        // ЭТИМ СЛОМАЛИ ofdm_symbol_demodulation_block!!!!
 
-        for (int i = 0; i < d_payload_ofdm_sym_num; ++i) {
+//        // Получение массива с полезной нагрузкой (без GI и без Preamble)
+//        gr_complex  payload_without_gi[d_payload_ofdm_sym_num * d_payload_subcarriers_num];
+//        int  offset          = fts_est + 64 + 64 + d_payload_gi_len;
+//        int  sym_with_gi_len = d_payload_subcarriers_num + d_payload_gi_len;
+//
+//        for (int i = 0; i < d_payload_ofdm_sym_num; ++i) {
+//
+//          for (int k = 0; k < d_payload_subcarriers_num; ++k) {
+//
+//            payload_without_gi[i * d_payload_subcarriers_num + k] =
+//                in[offset + k + i * sym_with_gi_len];
+//          }
+//        }
 
-          for (int k = 0; k < d_payload_subcarriers_num; ++k) {
+        // Откидываем преамбулу от пакета
+        gr_complex  packet_without_prmbl[d_packet_len - 320];
+        int offset = fts_est + 64 + 64;
 
-            payload_without_gi[i * d_payload_subcarriers_num + k] =
-                in[offset + k + i * sym_with_gi_len];
-          }
+        for (int i = 0; i < d_packet_len - 320; ++i) {
+          packet_without_prmbl[i] = in[offset + i];
         }
 
         // Формирование сообщения следующему блоку
-
         pmt::pmt_t  p_synch_info = pmt::make_dict();
-        p_synch_info = pmt::dict_add(p_synch_info, pmt::intern("cts_est"),     pmt::from_long(cts_est));
-        p_synch_info = pmt::dict_add(p_synch_info, pmt::intern("fts_est"),     pmt::from_long(fts_est));
-        p_synch_info = pmt::dict_add(p_synch_info, pmt::intern("ffs_est"),     pmt::from_float(ffs_est));
-        p_synch_info = pmt::dict_add(p_synch_info, pmt::intern("channel_est"), pmt::init_c32vector(52, channel_est));
+//        p_synch_info = pmt::dict_add(p_synch_info, pmt::intern("cts_est"),     pmt::from_long(cts_est));
+//        p_synch_info = pmt::dict_add(p_synch_info, pmt::intern("fts_est"),     pmt::from_long(fts_est));
+//        p_synch_info = pmt::dict_add(p_synch_info, pmt::intern("ffs_est"),     pmt::from_float(ffs_est));
 
-        pmt::pmt_t  p_payload_without_gi =
-            pmt::init_c32vector(d_payload_ofdm_sym_num * d_payload_subcarriers_num, payload_without_gi);
+        if (d_channel_est_is_make) {
+            p_synch_info = pmt::dict_add(p_synch_info, pmt::intern("channel_est"), pmt::init_c32vector(52, channel_est));
+        }
 
-        pmt::pmt_t  out_msg = cons(p_synch_info, p_payload_without_gi);
+        pmt::pmt_t  p_packet_without_prmbl =
+            pmt::init_c32vector(d_packet_len - 320, packet_without_prmbl);
+
+        pmt::pmt_t  out_msg = cons(p_synch_info, p_packet_without_prmbl);
 
         message_port_pub(pmt::mp("out"), out_msg);
 

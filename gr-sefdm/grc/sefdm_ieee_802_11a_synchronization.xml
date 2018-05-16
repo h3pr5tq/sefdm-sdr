@@ -7,7 +7,8 @@
   <make>sefdm.ieee_802_11a_synchronization($CTS_segmentLen,
                                            $FFS_isMake, $FFS_offset,
                                            $FTS_offset, $FTS_segmentLen, $FTS_etalonLen,
-                                           $Payload_symNum, $Payload_subcarrNum, $Payload_GILen)</make>
+                                           $ChannelEst_isMake,
+                                           $PacketLen)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name
@@ -64,6 +65,28 @@
   </param>
   
   <param>
+    <name>Channel Est: Is make?</name>
+    <key>ChannelEst_isMake</key>
+    <value>False</value>
+    <type>bool</type>
+    <option>
+      <name>Yes</name>
+      <key>True</key>
+    </option>
+    <option>
+        <name>No</name>
+        <key>False</key>
+    </option>
+  </param>
+  
+  <param>
+    <name>PacketLen (prmbl+hdr+no+pld)</name>
+    <key>PacketLen</key>
+    <type>int</type>
+  </param>
+  
+  <!-- 
+  <param>
     <name>N Sym in Packet Payload</name>
     <key>Payload_symNum</key>
     <value>20</value>
@@ -83,6 +106,7 @@
     <value>16</value>
     <type>int</type>
   </param>
+  -->
 
   <!-- Make one 'sink' node per input. Sub-nodes:
        * name (an identifier for the GUI)

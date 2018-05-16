@@ -54,14 +54,19 @@ namespace gr {
        * \param fts_offset_from_cts      FTS: Offset from CTS estimation for find FTS
        * \param fts_segment_len          FTS: Length of the segment on which correlation calculation
        * \param fts_etalon_seq_len       FTS: Length of etalon signal which using for correlation
-       * \param payload_ofdm_sym_num     Payload: number of ofdm/sefdm symbols in packet payload
-       * \param payload_subcarriers_num  Payload: number of subcarriers in ofdm/sefdm symbol of payload
-       * \param payload_gi_len           Payload: number of complex samples in GI of ofdm/sefdm symbol
+       * \param channel_est_is_make      Channel Est: Make or not channel estimation
+       * \param packet_len               Length of packet in samples (PHY packet)
+//       * \param payload_ofdm_sym_num     Payload: number of ofdm/sefdm symbols in packet payload
+//       * \param payload_subcarriers_num  Payload: number of subcarriers in ofdm/sefdm symbol of payload
+//       * \param payload_gi_len           Payload: number of complex samples in GI of ofdm/sefdm symbol
        */
       static sptr make(int cts_segment_len,
                        bool ffs_is_make, int ffs_offset_from_cts,
                        int fts_offset_from_cts, int fts_segment_len, int fts_etalon_seq_len,
-                       int payload_ofdm_sym_num, int payload_subcarriers_num, int payload_gi_len);
+                       bool channel_est_is_make,
+                       int packet_len
+//                       int payload_ofdm_sym_num, int payload_subcarriers_num, int payload_gi_len
+                       );
     };
 
   } // namespace sefdm
