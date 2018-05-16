@@ -5,9 +5,9 @@
   <category>[sefdm]</category>
   <import>import sefdm</import>
   <make>sefdm.header_synchronization($HdrNoPldLen,
-                                           $Hdr_Nsym, $Hdr_LenCp,
-                                           $Pld_Nsym, $Pld_LenCp,
-                                           $Sym_FftSize, $Sym_SefdmLen, $Sym_RightGiLen, $Sym_LeftGILen)</make>
+                                     $Hdr_Nsym, $Hdr_LenCp,
+                                     $Pld_Nsym, $Pld_LenCp,
+                                     $Sym_FftSize, $Sym_SefdmLen, $Sym_RightGiLen, $Sym_LeftGILen)</make>
   <!-- Make one 'param' node for every Parameter you want settable from the GUI.
        Sub-nodes:
        * name

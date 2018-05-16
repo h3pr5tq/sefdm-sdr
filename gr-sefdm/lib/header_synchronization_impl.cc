@@ -294,24 +294,24 @@ namespace gr {
 
     header_synchronization::sptr
     header_synchronization::make(int hdr_pld_len,
-                                       int hdr_n_sym, int hdr_len_cp,
-                                       int pld_n_sym, int pld_len_cp,
-                                       int sym_fft_size, int sefdm_sym_len, int sym_len_right_gi, int sym_len_left_gi)
+                                 int hdr_n_sym, int hdr_len_cp,
+                                 int pld_n_sym, int pld_len_cp,
+                                 int sym_fft_size, int sefdm_sym_len, int sym_len_right_gi, int sym_len_left_gi)
     {
       return gnuradio::get_initial_sptr
         ( new header_synchronization_impl(hdr_pld_len,
-                                                hdr_n_sym, hdr_len_cp,
-                                                pld_n_sym, pld_len_cp,
-                                                sym_fft_size, sefdm_sym_len, sym_len_right_gi, sym_len_left_gi) );
+                                          hdr_n_sym, hdr_len_cp,
+                                          pld_n_sym, pld_len_cp,
+                                          sym_fft_size, sefdm_sym_len, sym_len_right_gi, sym_len_left_gi) );
     }
 
     /*
      * The private constructor
      */
     header_synchronization_impl::header_synchronization_impl(int hdr_pld_len,
-                                                                         int hdr_n_sym, int hdr_len_cp,
-                                                                         int pld_n_sym, int pld_len_cp,
-                                                                         int sym_fft_size, int sefdm_sym_len, int sym_len_right_gi, int sym_len_left_gi)
+                                                             int hdr_n_sym, int hdr_len_cp,
+                                                             int pld_n_sym, int pld_len_cp,
+                                                             int sym_fft_size, int sefdm_sym_len, int sym_len_right_gi, int sym_len_left_gi)
       : gr::block("header_synchronization",
               gr::io_signature::make(0, 0, sizeof(gr_complex)),
               gr::io_signature::make(0, 0, sizeof(gr_complex))),
@@ -527,7 +527,7 @@ namespace gr {
 
     inline void
     header_synchronization_impl::equalizer(std::vector<gr_complex>&        R,
-                                                 const std::vector<gr_complex>&  channel_freq_response) const
+                                           const std::vector<gr_complex>&  channel_freq_response) const
     {
         // Поднесущие слева от нулевой частоты
         for (int  i = 0; i < d_n_left_inf_subcarr; ++i) {
@@ -556,9 +556,9 @@ namespace gr {
 
     inline void
     header_synchronization_impl::estimate_residual_freq_offset(const std::vector<std::vector<gr_complex>>&  hdr_R,
-                                                                     float&  const_fi,
-                                                                     float&  dfi,
-                                                                     int&    symNo) const
+                                                               float&  const_fi,
+                                                               float&  dfi,
+                                                               int&    symNo) const
     {
         int  i = 0;
         gr_complex  val(0.0f, 0.0f);
@@ -583,9 +583,9 @@ namespace gr {
 
     inline void
     header_synchronization_impl::compensate_residual_freq_offset(std::vector<gr_complex>&  R,
-                                                                       const float&  const_fi,
-                                                                       const float&  dfi,
-                                                                       int&    symNo) const
+                                                                 const float&  const_fi,
+                                                                 const float&  dfi,
+                                                                 int&    symNo) const
     {
         gr_complex  exp_val = exp( gr_complex(0.0f, -1 * const_fi + dfi * (symNo - 1)) );
 

@@ -348,7 +348,7 @@
     </param>
     <param>
       <key>value</key>
-      <value>295</value>
+      <value>29500</value>
     </param>
   </block>
   <block>
@@ -611,7 +611,7 @@
     </param>
     <param>
       <key>file</key>
-      <value>/home/ivan/Documents/Signals/1_rx_sefdm_11.05.18/truncate_to_one_packet/tr_rx_sefdm__pckt_10000_1000__hdr_6_6__pld_20_6__sym_32_26_20_3_2_bpsk__.dat</value>
+      <value>/home/ivan/Documents/Signals/1_rx_sefdm_11.05.18/rx_sefdm__pckt_10000_1000__hdr_6_6__pld_20_6__sym_32_26_20_3_2_bpsk__.dat</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -639,7 +639,7 @@
     </param>
     <param>
       <key>repeat</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
       <key>vlen</key>
@@ -662,11 +662,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>1</value>
+      <value>0</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1040, 792)</value>
+      <value>(1104, 752)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -2445,11 +2445,11 @@
     </param>
     <param>
       <key>_enabled</key>
-      <value>0</value>
+      <value>1</value>
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(336, 956)</value>
+      <value>(1080, 964)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -3904,7 +3904,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(688, 740)</value>
+      <value>(608, 740)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -4148,6 +4148,73 @@
       <value>prmbl_hdr_no_payload_len</value>
     </param>
   </block>
+  <block>
+    <key>sefdm_mf_demodulator</key>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>ChannelCompensation_isMake</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>comment</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(824, 816)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>id</key>
+      <value>sefdm_mf_demodulator_0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>PhaseOffsetCompensation_isMake</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>Pld_Nsym</key>
+      <value>pld_n_sym</value>
+    </param>
+    <param>
+      <key>Sym_FftSize</key>
+      <value>sym_fft_size</value>
+    </param>
+    <param>
+      <key>Sym_LeftGILen</key>
+      <value>sym_len_left_gi</value>
+    </param>
+    <param>
+      <key>Sym_RightGiLen</key>
+      <value>sym_len_right_gi</value>
+    </param>
+    <param>
+      <key>Sym_SefdmLen</key>
+      <value>sym_sefdm_len</value>
+    </param>
+  </block>
   <connection>
     <source_block_id>blocks_file_source_0</source_block_id>
     <sink_block_id>blocks_throttle_0</sink_block_id>
@@ -4216,27 +4283,15 @@
   </connection>
   <connection>
     <source_block_id>sefdm_header_synchronization_0</source_block_id>
-    <sink_block_id>blocks_message_debug_0_0</sink_block_id>
+    <sink_block_id>sefdm_mf_demodulator_0</sink_block_id>
     <source_key>sefdm_hdr_synch_out</source_key>
-    <sink_key>print</sink_key>
+    <sink_key>mf_demodulator_in</sink_key>
   </connection>
   <connection>
     <source_block_id>sefdm_ieee_802_11a_ofdm_symbol_demodulation_0</source_block_id>
     <sink_block_id>blocks_pdu_to_tagged_stream_0</sink_block_id>
     <source_key>out2</source_key>
     <sink_key>pdus</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>sefdm_ieee_802_11a_ofdm_symbol_demodulation_0</source_block_id>
-    <sink_block_id>pyqt_const_plot_1</sink_block_id>
-    <source_key>out2</source_key>
-    <sink_key>cpdus</sink_key>
-  </connection>
-  <connection>
-    <source_block_id>sefdm_ieee_802_11a_ofdm_symbol_demodulation_0</source_block_id>
-    <sink_block_id>qtgui_const_sink_x_0</sink_block_id>
-    <source_key>out2</source_key>
-    <sink_key>in</sink_key>
   </connection>
   <connection>
     <source_block_id>sefdm_ieee_802_11a_preamble_detection_0</source_block_id>
@@ -4273,5 +4328,17 @@
     <sink_block_id>sefdm_ieee_802_11a_ofdm_symbol_demodulation_0</sink_block_id>
     <source_key>out</source_key>
     <sink_key>in2</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>sefdm_mf_demodulator_0</source_block_id>
+    <sink_block_id>blocks_message_debug_0_0</sink_block_id>
+    <source_key>mf_demodulator_out</source_key>
+    <sink_key>print</sink_key>
+  </connection>
+  <connection>
+    <source_block_id>sefdm_mf_demodulator_0</source_block_id>
+    <sink_block_id>qtgui_const_sink_x_0</sink_block_id>
+    <source_key>mf_demodulator_out</source_key>
+    <sink_key>in</sink_key>
   </connection>
 </flow_graph>

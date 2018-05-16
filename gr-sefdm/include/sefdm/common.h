@@ -19,40 +19,38 @@
  */
 
 
-#ifndef INCLUDED_SEFDM_MF_DEMODULATOR_H
-#define INCLUDED_SEFDM_MF_DEMODULATOR_H
+#ifndef INCLUDED_SEFDM_COMMON_H
+#define INCLUDED_SEFDM_COMMON_H
 
 #include <sefdm/api.h>
-#include <gnuradio/block.h>
 
 namespace gr {
   namespace sefdm {
 
+    void
+    get_inf_subcarrier_number(int sym_sefdm_len, int sym_right_gi_len, int sym_left_gi_len,
+                              // out:
+                              int& sym_n_inf_subcarr,
+                              int& sym_n_right_inf_subcarr,
+                              int& sym_n_left_inf_subcarr);
+
+    int
+    get_add_zero_subcarrier_number(int sym_fft_size, int sym_sefdm_len);
+
     /*!
-     * \brief <+description of block+>
-     * \ingroup sefdm
+     * \brief <+description+>
      *
      */
-    class SEFDM_API mf_demodulator : virtual public gr::block
+    class SEFDM_API common
     {
-     public:
-      typedef boost::shared_ptr<mf_demodulator> sptr;
-
-      /*!
-       * \brief Return a shared_ptr to a new instance of sefdm::mf_demodulator.
-       *
-       * To avoid accidental use of raw pointers, sefdm::mf_demodulator's
-       * constructor is in a private implementation
-       * class. sefdm::mf_demodulator::make is the public interface for
-       * creating new instances.
-       */
-      static sptr make(int pld_n_sym,
-                       int sym_fft_size, int sym_sefdm_len, int sym_right_gi_len, int sym_left_gi_len,
-                       bool channel_compensation__is_make, bool phase_offset_compensation__is_make);
+    public:
+      common();
+      ~common();
+    private:
     };
 
   } // namespace sefdm
 } // namespace gr
 
-#endif /* INCLUDED_SEFDM_MF_DEMODULATOR_H */
+#endif /* INCLUDED_SEFDM_COMMON_H */
 

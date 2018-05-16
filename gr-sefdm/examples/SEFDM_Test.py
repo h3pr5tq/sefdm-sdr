@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Sefdm Test
-# Generated: Wed May 16 15:17:06 2018
+# Generated: Thu May 17 00:41:40 2018
 ##################################################
 
 if __name__ == '__main__':
@@ -28,7 +28,6 @@ from optparse import OptionParser
 import sefdm
 import sip
 import sys
-import os
 
 
 class SEFDM_Test(gr.top_block, Qt.QWidget):
@@ -70,12 +69,15 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         self.sym_len_left_gi = sym_len_left_gi = 3
         self.radio_samp_rate = radio_samp_rate = 4e6
         self.radio_carrier_freq = radio_carrier_freq = 2290e6
-        self.qtTimeSink_num_point = qtTimeSink_num_point = 295
+        self.qtTimeSink_num_point = qtTimeSink_num_point = 29500
         self.prmbl_hdr_no_payload_len = prmbl_hdr_no_payload_len = 320 + hdr_n_sym * (sym_fft_size + hdr_len_cp) + (sym_fft_size + hdr_len_cp) + pld_n_sym * (sym_sefdm_len+ pld_len_cp)
 
         ##################################################
         # Blocks
         ##################################################
+        self.sefdm_mf_demodulator_0 = sefdm.mf_demodulator(pld_n_sym,
+                                     sym_fft_size, sym_sefdm_len, sym_len_right_gi, sym_len_left_gi,
+                                     True, True)
         self.sefdm_ieee_802_11a_synchronization_0 = sefdm.ieee_802_11a_synchronization(160,
                                                    False, 15,
                                                    160 + 32 - 20, 40, 32,
@@ -83,9 +85,9 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
                                                    prmbl_hdr_no_payload_len)
         self.sefdm_ieee_802_11a_preamble_detection_0 = sefdm.ieee_802_11a_preamble_detection(144, 16, 0.6, 60, -20, "packet_len", prmbl_hdr_no_payload_len, 150)
         self.sefdm_header_synchronization_0 = sefdm.header_synchronization(prmbl_hdr_no_payload_len - 320,
-                                                   hdr_n_sym, hdr_len_cp,
-                                                   pld_n_sym, pld_len_cp,
-                                                   sym_fft_size, sym_sefdm_len, sym_len_right_gi, sym_len_left_gi)
+                                             hdr_n_sym, hdr_len_cp,
+                                             pld_n_sym, pld_len_cp,
+                                             sym_fft_size, sym_sefdm_len, sym_len_right_gi, sym_len_left_gi)
         self.sefdm_extract_packets_from_stream_0 = sefdm.extract_packets_from_stream("packet_len")
         self.qtgui_time_sink_x_1 = qtgui.time_sink_f(
         	qtTimeSink_num_point, #size
@@ -184,19 +186,60 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         
         self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
+        self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
+        	1024, #size
+        	"", #name
+        	0 #number of inputs
+        )
+        self.qtgui_const_sink_x_0.set_update_time(0.00010)
+        self.qtgui_const_sink_x_0.set_y_axis(-2, 2)
+        self.qtgui_const_sink_x_0.set_x_axis(-2, 2)
+        self.qtgui_const_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, "")
+        self.qtgui_const_sink_x_0.enable_autoscale(False)
+        self.qtgui_const_sink_x_0.enable_grid(True)
+        self.qtgui_const_sink_x_0.enable_axis_labels(True)
+        
+        if not True:
+          self.qtgui_const_sink_x_0.disable_legend()
+        
+        labels = ['', '', '', '', '',
+                  '', '', '', '', '']
+        widths = [1, 1, 1, 1, 1,
+                  1, 1, 1, 1, 1]
+        colors = ["blue", "red", "red", "red", "red",
+                  "red", "red", "red", "red", "red"]
+        styles = [0, 0, 0, 0, 0,
+                  0, 0, 0, 0, 0]
+        markers = [0, 0, 0, 0, 0,
+                   0, 0, 0, 0, 0]
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+                  1.0, 1.0, 1.0, 1.0, 1.0]
+        for i in xrange(1):
+            if len(labels[i]) == 0:
+                self.qtgui_const_sink_x_0.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_const_sink_x_0.set_line_label(i, labels[i])
+            self.qtgui_const_sink_x_0.set_line_width(i, widths[i])
+            self.qtgui_const_sink_x_0.set_line_color(i, colors[i])
+            self.qtgui_const_sink_x_0.set_line_style(i, styles[i])
+            self.qtgui_const_sink_x_0.set_line_marker(i, markers[i])
+            self.qtgui_const_sink_x_0.set_line_alpha(i, alphas[i])
+        
+        self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.pyqwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_const_sink_x_0_win)
         self.fir_filter_xxx_0 = filter.fir_filter_ccf(1, ([-0.0690, -0.2497, 0.6374, -0.2497, -0.0690]))
         self.fir_filter_xxx_0.declare_sample_delay(0)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, radio_samp_rate,True)
         self.blocks_tagged_stream_to_pdu_0 = blocks.tagged_stream_to_pdu(blocks.complex_t, "packet_len")
-        self.blocks_message_debug_0_0 = blocks.message_debug()
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/ivan/Documents/Signals/1_rx_sefdm_11.05.18/truncate_to_one_packet/tr_rx_sefdm__pckt_10000_1000__hdr_6_6__pld_20_6__sym_32_26_20_3_2_bpsk__.dat', True)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/ivan/Documents/Signals/1_rx_sefdm_11.05.18/rx_sefdm__pckt_10000_1000__hdr_6_6__pld_20_6__sym_32_26_20_3_2_bpsk__.dat', False)
 
         ##################################################
         # Connections
         ##################################################
         self.msg_connect((self.blocks_tagged_stream_to_pdu_0, 'pdus'), (self.sefdm_ieee_802_11a_synchronization_0, 'in'))    
-        self.msg_connect((self.sefdm_header_synchronization_0, 'sefdm_hdr_synch_out'), (self.blocks_message_debug_0_0, 'print'))    
+        self.msg_connect((self.sefdm_header_synchronization_0, 'sefdm_hdr_synch_out'), (self.sefdm_mf_demodulator_0, 'mf_demodulator_in'))    
         self.msg_connect((self.sefdm_ieee_802_11a_synchronization_0, 'out'), (self.sefdm_header_synchronization_0, 'sefdm_hdr_synch_in'))    
+        self.msg_connect((self.sefdm_mf_demodulator_0, 'mf_demodulator_out'), (self.qtgui_const_sink_x_0, 'in'))    
         self.connect((self.blocks_file_source_0, 0), (self.blocks_throttle_0, 0))    
         self.connect((self.blocks_throttle_0, 0), (self.fir_filter_xxx_0, 0))    
         self.connect((self.blocks_throttle_0, 0), (self.sefdm_ieee_802_11a_preamble_detection_0, 0))    
@@ -319,6 +362,4 @@ def main(top_block_cls=SEFDM_Test, options=None):
 
 
 if __name__ == '__main__':
-    print 'Blocked waiting for GDB attach (pid = %d)' % (os.getpid(),)
-    raw_input ('Press Enter to continue: ')
     main()

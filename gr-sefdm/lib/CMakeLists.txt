@@ -32,7 +32,8 @@ list(APPEND sefdm_sources
     ieee_802_11a_synchronization_impl.cc
     ieee_802_11a_ofdm_symbol_demodulation_impl.cc
     header_synchronization_impl.cc
-    mf_demodulator_impl.cc )
+    mf_demodulator_impl.cc
+    common.cc )
 
 set(sefdm_sources "${sefdm_sources}" PARENT_SCOPE)
 if(NOT sefdm_sources)

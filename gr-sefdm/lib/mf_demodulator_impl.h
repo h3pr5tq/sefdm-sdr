@@ -30,9 +30,40 @@ namespace gr {
     {
      private:
       // Nothing to declare in this block.
+      const int  d_pld_n_sym;
+      const int  d_sym_fft_size;
+      const int  d_sym_sefdm_len;
+      const int  d_sym_right_gi_len;
+      const int  d_sym_left_gi_len;
+
+      const bool  d_channel_compensation__is_make;
+      const bool  d_phase_offset_compensation__is_make;
+
+      int  d_sym_n_inf_subcarr;
+      int  d_sym_n_right_inf_subcarr;
+      int  d_sym_n_left_inf_subcarr;
+
+      int  d_add_zero_subcarr;
+
+      const int  d_pld_without_cp_len;
+
+      void
+      mf_demodulator_in_handler(pmt::pmt_t msg);
+
+      inline void
+      equalizer(std::vector<gr_complex>&        R,
+                const std::vector<gr_complex>&  channel_freq_response) const;
+
+      inline void
+      compensate_residual_freq_offset(std::vector<gr_complex>&  R,
+                                      const float&  const_fi,
+                                      const float&  dfi,
+                                      int&    symNo) const;
 
      public:
-      mf_demodulator_impl();
+      mf_demodulator_impl(int pld_n_sym,
+                          int sym_fft_size, int sym_sefdm_len, int sym_right_gi_len, int sym_left_gi_len,
+                          bool channel_est__is_make, bool phase_offset_compensation__is_make);
       ~mf_demodulator_impl();
 
       // Where all the action really happens
