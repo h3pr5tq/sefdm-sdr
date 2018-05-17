@@ -71,8 +71,8 @@ namespace gr {
                                       const float&                           dfi,
                                       int&                                   symNo) const;
 
-      inline std::vector<uint8_t>
-      demap_bpsk(const std::vector<gr_complex>&  R) const;
+      inline std::vector<int8_t>
+      slicing_bpsk(const std::vector<gr_complex>&  R) const;
 
      public:
       header_synchronization_impl(int hdr_pld_len,

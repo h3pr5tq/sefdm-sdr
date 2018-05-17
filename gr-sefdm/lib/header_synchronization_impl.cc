@@ -473,7 +473,7 @@ namespace gr {
       compensate_residual_freq_offset(no_R, const_fi, dfi, symNo);
 
       // Packet No BPSK demap
-      std::vector<uint8_t>  no_bit = demap_bpsk(no_R);
+      std::vector<int8_t>  no_modulation_sym = slicing_bpsk(no_R);
 
       // Удаление CP у Packet Payload
       std::vector<gr_complex>  pld_without_cp(d_pld_n_sym * d_sym_sefdm_len, gr_complex(0.0f, 0.0f));
@@ -491,7 +491,7 @@ namespace gr {
       // Формирование сообщения следующему блоку
       pmt::pmt_t  p_synch_info = pmt::make_dict();
       p_synch_info = pmt::dict_add( p_synch_info, pmt::intern("channel_est"),        pmt::init_c32vector(d_sym_sefdm_len, channel_freq_response) );
-      p_synch_info = pmt::dict_add( p_synch_info, pmt::intern("packet_No"),          pmt::init_u8vector(d_sym_n_inf_subcarr, no_bit) );
+      p_synch_info = pmt::dict_add( p_synch_info, pmt::intern("packet_No"),          pmt::init_s8vector(d_sym_n_inf_subcarr, no_modulation_sym) );
       p_synch_info = pmt::dict_add( p_synch_info, pmt::intern("const_phase_offset"), pmt::from_float(const_fi) );
       p_synch_info = pmt::dict_add( p_synch_info, pmt::intern("diff_phase_offset"),  pmt::from_float(dfi) );
       p_synch_info = pmt::dict_add( p_synch_info, pmt::intern("sym_No"),             pmt::from_long(symNo) );
@@ -605,10 +605,10 @@ namespace gr {
         symNo = symNo + 1;
     }
 
-    inline std::vector<uint8_t>
-    header_synchronization_impl::demap_bpsk(const std::vector<gr_complex>&  R) const
+    inline std::vector<int8_t>
+    header_synchronization_impl::slicing_bpsk(const std::vector<gr_complex>&  R) const
     {
-        std::vector<uint8_t> bit(d_sym_n_inf_subcarr, 0);
+        std::vector<int8_t> modulation_sym(d_sym_n_inf_subcarr, 0);
 
         int j = 0,
             i;
@@ -617,14 +617,14 @@ namespace gr {
              i < d_n_left_inf_subcarr + 1 + d_n_right_inf_subcarr;
              ++i, ++j) {
 
-            bit[j] = ( R[i].real() > 0 );
+          modulation_sym[j] = ( R[i].real() > 0 ) ? 1 : -1;
         }
 
         for (i = 0; i < d_n_left_inf_subcarr; ++i, ++j) {
-            bit[j] = ( R[i].real() > 0 );
+          modulation_sym[j] = ( R[i].real() > 0 ) ? 1 : -1;
         }
 
-        return bit;
+        return modulation_sym;
     }
 
 

@@ -3,7 +3,7 @@
 ##################################################
 # GNU Radio Python Flow Graph
 # Title: Sefdm Test
-# Generated: Thu May 17 15:44:14 2018
+# Generated: Thu May 17 17:22:22 2018
 ##################################################
 
 if __name__ == '__main__':
@@ -275,7 +275,7 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         self.fir_filter_xxx_0.declare_sample_delay(0)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, radio_samp_rate,True)
         self.blocks_tagged_stream_to_pdu_0 = blocks.tagged_stream_to_pdu(blocks.complex_t, "packet_len")
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/ivan/Documents/Signals/1_rx_sefdm_11.05.18/rx_sefdm__pckt_10000_0__hdr_6_6__pld_20_6__sym_32_26_20_3_2_bpsk__.dat', False)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_gr_complex*1, '/home/ivan/Documents/Signals/1_rx_sefdm_11.05.18/rx_sefdm__pckt_10000_1000__hdr_6_6__pld_20_6__sym_32_26_20_3_2_bpsk__.dat', False)
 
         ##################################################
         # Connections

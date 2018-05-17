@@ -611,7 +611,7 @@
     </param>
     <param>
       <key>file</key>
-      <value>/home/ivan/Documents/Signals/1_rx_sefdm_11.05.18/rx_sefdm__pckt_10000_0__hdr_6_6__pld_20_6__sym_32_26_20_3_2_bpsk__.dat</value>
+      <value>/home/ivan/Documents/Signals/1_rx_sefdm_11.05.18/rx_sefdm__pckt_10000_1000__hdr_6_6__pld_20_6__sym_32_26_20_3_2_bpsk__.dat</value>
     </param>
     <param>
       <key>_coordinate</key>
@@ -3143,7 +3143,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1040, 940)</value>
+      <value>(1032, 932)</value>
     </param>
     <param>
       <key>gui_hint</key>
@@ -4326,7 +4326,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(808, 904)</value>
+      <value>(816, 896)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -4582,7 +4582,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(816, 744)</value>
+      <value>(816, 736)</value>
     </param>
     <param>
       <key>_rotation</key>

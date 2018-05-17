@@ -117,7 +117,9 @@ namespace gr {
         throw std::runtime_error( "(in_len) != (payload len)" );
       }
 
-      std::vector<gr_complex>   modulation_sym(d_pld_n_sym * d_sym_n_inf_subcarr, gr_complex(0.0f, 0.0f));
+      // Вектор под No + Payload Modulation Sym
+      std::vector<gr_complex>   modulation_sym(d_sym_n_inf_subcarr + d_pld_n_sym * d_sym_n_inf_subcarr,
+                                               gr_complex(0.0f, 0.0f));
       gr_complex  s_uncnsrt_est[d_sym_sefdm_len];
       gr_complex  s_cnsrt_est[d_sym_sefdm_len];
       for (int sym_no = 0; sym_no < d_pld_n_sym; ++sym_no) { // по SEFDM-символам в Packet Payload
@@ -155,7 +157,7 @@ namespace gr {
           // Return result с учётом выделения информационных поднесущих
           int  j = 0,
                i,
-               offset2 = sym_no * d_sym_n_inf_subcarr;
+               offset2 = d_sym_n_inf_subcarr + sym_no * d_sym_n_inf_subcarr;
           for (i = d_sym_n_left_inf_subcarr + 1;
                i < d_sym_n_left_inf_subcarr + 1 + d_sym_n_right_inf_subcarr;
                ++i, ++j) {
@@ -171,14 +173,36 @@ namespace gr {
       }
 
 
-      // Добавить в @modulation_sym порядковый номер!
+      // Добавление в начало @modulation_sym модуляционных символов == порядкового номера пакета!
+      // Get @no_modulation_sym
+      pmt::pmt_t  p_no_modulation_sym =
+          pmt::dict_ref( pmt::car(msg), // dict
+                         pmt::intern("packet_No"), // key
+                         pmt::from_long(0) ); // return value, if key is not found
+      if ( eq(p_no_modulation_sym,  pmt::from_long(0)) ) {
+          throw std::runtime_error( "Not found key \"packet_No\"!" );
+      }
+
+      const std::vector<int8_t>  no_modulation_sym =
+          pmt::s8vector_elements(p_no_modulation_sym);
+      if ( no_modulation_sym.size() != d_sym_n_inf_subcarr ) {
+          std::cout << "no_modulation_sym.size(): " << no_modulation_sym.size() <<
+              "   d_sym_n_inf_subcarr: " << d_sym_n_inf_subcarr << std::endl;
+          throw std::runtime_error( "no_modulation_sym.size() != d_sym_n_inf_subcarr" );
+      }
+
+      for (int i = 0; i < d_sym_n_inf_subcarr; ++i) {
+          modulation_sym[i] = gr_complex( float(no_modulation_sym[i]), 0.0f );
+      }
+
+
       // НУЖЕН ЛИ СЛОВАРЬ?
       pmt::pmt_t  p_synch_info = pmt::make_dict();
       p_synch_info = pmt::dict_add( p_synch_info,
                                     pmt::intern("packet_len"),
-                                    pmt::from_long(d_pld_n_sym * d_sym_n_inf_subcarr) );
+                                    pmt::from_long(d_sym_n_inf_subcarr + d_pld_n_sym * d_sym_n_inf_subcarr) );
       pmt::pmt_t  p_modulation_sym =
-          pmt::init_c32vector(d_pld_n_sym * d_sym_n_inf_subcarr, modulation_sym);
+          pmt::init_c32vector(d_sym_n_inf_subcarr + d_pld_n_sym * d_sym_n_inf_subcarr, modulation_sym);
 
       pmt::pmt_t  out_msg = cons(p_synch_info, p_modulation_sym);
 
