@@ -19,47 +19,40 @@
  */
 
 
-#ifndef INCLUDED_SEFDM_COMMON_H
-#define INCLUDED_SEFDM_COMMON_H
+#ifndef INCLUDED_SEFDM_ID_DETECTOR_H
+#define INCLUDED_SEFDM_ID_DETECTOR_H
 
 #include <sefdm/api.h>
+#include <gnuradio/block.h>
 
 namespace gr {
   namespace sefdm {
 
-    void
-    get_inf_subcarrier_number(int sym_sefdm_len, int sym_right_gi_len, int sym_left_gi_len,
-                              // out:
-                              int& sym_n_inf_subcarr,
-                              int& sym_n_right_inf_subcarr,
-                              int& sym_n_left_inf_subcarr);
-
-    int
-    get_add_zero_subcarrier_number(int sym_fft_size, int sym_sefdm_len);
-
-    std::vector<std::vector<gr_complex>>
-    get_idft_matrix(int n_point, float alfa);
-
-    std::vector<std::vector<gr_complex>>
-    get_c_matrix(int n_point, float alfa);
-
-    std::vector<std::vector<gr_complex>>
-    get_eye_c_matrix(int n_point, float alfa);
-
     /*!
-     * \brief <+description+>
+     * \brief <+description of block+>
+     * \ingroup sefdm
      *
      */
-    class SEFDM_API common
+    class SEFDM_API id_detector : virtual public gr::block
     {
-    public:
-      common();
-      ~common();
-    private:
+     public:
+      typedef boost::shared_ptr<id_detector> sptr;
+
+      /*!
+       * \brief Return a shared_ptr to a new instance of sefdm::id_detector.
+       *
+       * To avoid accidental use of raw pointers, sefdm::id_detector's
+       * constructor is in a private implementation
+       * class. sefdm::id_detector::make is the public interface for
+       * creating new instances.
+       */
+      static sptr make(int n_iteration,
+                       int pld_n_sym,
+                       int sym_fft_size, int sym_sefdm_len, int sym_right_gi_len, int sym_left_gi_len);
     };
 
   } // namespace sefdm
 } // namespace gr
 
-#endif /* INCLUDED_SEFDM_COMMON_H */
+#endif /* INCLUDED_SEFDM_ID_DETECTOR_H */
 

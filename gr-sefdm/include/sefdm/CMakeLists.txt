@@ -30,5 +30,6 @@ install(FILES
     ieee_802_11a_ofdm_symbol_demodulation.h
     header_synchronization.h
     mf_demodulator.h
-    common.h DESTINATION include/sefdm
+    common.h
+    id_detector.h DESTINATION include/sefdm
 )

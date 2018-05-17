@@ -22,6 +22,8 @@
 #include "config.h"
 #endif
 
+#include <complex>
+
 #include <gnuradio/io_signature.h>
 #include <sefdm/common.h>
 
@@ -54,6 +56,78 @@ namespace gr {
     get_add_zero_subcarrier_number(int sym_fft_size, int sym_sefdm_len)
     {
         return sym_fft_size - sym_sefdm_len;
+    }
+
+    std::vector<std::vector<gr_complex>>
+    get_idft_matrix(int n_point, float alfa)
+    {
+        std::vector<std::vector<gr_complex>>  idft_matrix( n_point,
+            std::vector<gr_complex>(n_point, gr_complex(0.0f, 0.0f)) );
+
+        for (int k = 0; k < n_point; ++k) {
+            for (int n = 0; n < n_point; ++n) {
+                idft_matrix[k][n] =
+                    gr_complex(1 / sqrt(n_point), 0.0f) *
+                    exp( gr_complex(0.0f, 2 * M_PI * alfa * n * k / n_point) );
+            }
+        }
+
+        return idft_matrix;
+    }
+
+    std::vector<std::vector<gr_complex>>
+    get_c_matrix(int n_point, float alfa)
+    {
+        std::vector<std::vector<gr_complex>>  c_matrix( n_point,
+            std::vector<gr_complex>(n_point, gr_complex(0.0f, 0.0f)) );
+
+        std::vector<std::vector<gr_complex>>  f_matrix = get_idft_matrix(n_point, alfa);
+
+        // Get F'
+        std::vector<std::vector<gr_complex>>  f_transponse_matrix( n_point,
+            std::vector<gr_complex>(n_point, gr_complex(0.0f, 0.0f)) );
+        for (int r = 0; r < n_point; ++r) {
+
+            for (int c = 0; c < n_point; ++c) {
+
+              f_transponse_matrix[r][c] = conj( f_matrix[c][r] );
+            }
+        }
+
+        // C = F' * F
+        for (int r = 0; r < n_point; ++r) {
+
+            for (int c = 0; c < n_point; ++c) {
+
+                for (int i = 0; i < n_point; ++i) {
+
+                    c_matrix[r][c] += f_transponse_matrix[r][i] * f_matrix[i][c];
+                }
+            }
+        }
+
+        return c_matrix;
+    }
+
+    std::vector<std::vector<gr_complex>>
+    get_eye_c_matrix(int n_point, float alfa)
+    {
+        std::vector<std::vector<gr_complex>>  eye_c_matrix = get_c_matrix(n_point, alfa);
+
+        // eye_c = eye - c, where eye - Identity Matrix
+        for (int r = 0; r < n_point; ++r) {
+
+            for (int c = 0; c < n_point; ++c) {
+
+                if (r == c) {
+                    eye_c_matrix[r][c] = gr_complex(1.0f, 0.0f) - eye_c_matrix[r][c];
+                } else {
+                    eye_c_matrix[r][c] = gr_complex(0.0f, 0.0f) - eye_c_matrix[r][c];
+                }
+            }
+        }
+
+        return eye_c_matrix;
     }
 
     common::common()

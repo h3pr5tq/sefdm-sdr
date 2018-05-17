@@ -49,3 +49,4 @@ GR_ADD_TEST(qa_ieee_802_11a_synchronization ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT
 GR_ADD_TEST(qa_ieee_802_11a_ofdm_symbol_demodulation ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_ieee_802_11a_ofdm_symbol_demodulation.py)
 GR_ADD_TEST(qa_header_synchronization ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_header_synchronization.py)
 GR_ADD_TEST(qa_mf_demodulator ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_mf_demodulator.py)
+GR_ADD_TEST(qa_id_detector ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_id_detector.py)

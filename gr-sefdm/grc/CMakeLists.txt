@@ -25,5 +25,5 @@ install(FILES
     sefdm_ieee_802_11a_ofdm_symbol_demodulation.xml
     sefdm_header_synchronization.xml
     sefdm_mf_demodulator.xml
-    DESTINATION share/gnuradio/grc/blocks
+    sefdm_id_detector.xml DESTINATION share/gnuradio/grc/blocks
 )
