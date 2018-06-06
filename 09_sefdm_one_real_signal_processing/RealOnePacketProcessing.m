@@ -46,9 +46,9 @@ end
 sefdm_init(sym_ifft_size, alfa, sym_len_right_gi, sym_len_left_gi, modulation);
 
 % Вывод графиков: 'display' or 'no_display'
-detection_graph_mode = 'no_display';
-cts_graph_mode       = 'no_display';
-fts_graph_mode       = 'no_display';
+detection_graph_mode = 'display';
+cts_graph_mode       = 'display';
+fts_graph_mode       = 'display';
 
 
 %% Чтение файла целиком
@@ -80,7 +80,7 @@ b = [-0.069011962933607576275996109416155377403, ...
 % Кол-во отсчётов, которые пропускаем (не учитываем) после того как сигнал обнаружен
 % (на данной кол-во отсчётов алгоритм обнаружения "засыпает")
 % sampleJumpAfterSigDetect = (N_ofdm_sym * 80 + 320) + 100; % 100 - чтобы перескочить побочный непонятные пики
-sampleJumpAfterSigDetect = 0;
+sampleJumpAfterSigDetect = 1500;
 
 SigDetect_s = struct('SampleNo', [], 'detectMetric', []);
 detectSigNum = 0; % кол-во обнаруженных сигналов (определяет текущий размер массивов в структуре)
@@ -203,160 +203,164 @@ end
 clear detectMetricArray filteredRxSig;
 
 
-k = 1; % Кол-во обнаруженных сигналов
+detectSigNum = length(SigDetect_s.SampleNo); % кол-во обноруженных пакетов (сигналов)
+for k = 1 : detectSigNum
 
+	%% Coarse Time Synch
+	% Первое число - отсчёт,на котором произошло превышение порога,
+	% второе число - сколько отсчётов откатить назад, на случай если превышение порога произошло не до начала преамбулы, а внутри неё
+	startCTSSample = SigDetect_s.SampleNo(k) + startCTSSampleOffset;
 
-%% Coarse Time Synch
-% Первое число - отсчёт,на котором произошло превышение порога,
-% второе число - сколько отсчётов откатить назад, на случай если превышение порога произошло не до начала преамбулы, а внутри неё
-startCTSSample = SigDetect_s.SampleNo(k) + startCTSSampleOffset;
+	% Используем рекурсивный алгоритм
 
-% Используем рекурсивный алгоритм
+	ctsMetricArray = zeros(1, segmentCTSLen); % for debug
 
-ctsMetricArray = zeros(1, segmentCTSLen); % for debug
-
-% Первая итерация 
-i = startCTSSample;
-autoCorr = rxSig(i : i + L_cts - 1) * ...
-		   rxSig(i + 0 + D_cts : i + L_cts + D_cts - 1)';
-% Метрика (максимум модуля автокорреляции НА заданном отрезке)
-ctsMetric = abs(autoCorr);
-estCTO = i; % номер отсчёта
-
-ctsMetricArray(i - startCTSSample + 1) = abs(autoCorr); % for debug
-
-% Последующие итерации (рекурсивный алгоритм)
-for i = startCTSSample + 1 : startCTSSample + segmentCTSLen - 1
-
-	autoCorr = autoCorr + ...
-			   rxSig(i - 1 + L_cts) * rxSig(i - 1 + L_cts + D_cts)' - ...
-			   rxSig(i - 1) * rxSig(i - 1 + D_cts)';
-
+	% Первая итерация 
+	i = startCTSSample;
+	autoCorr = rxSig(i : i + L_cts - 1) * ...
+			   rxSig(i + 0 + D_cts : i + L_cts + D_cts - 1)';
 	% Метрика (максимум модуля автокорреляции НА заданном отрезке)
-	if abs(autoCorr) > ctsMetric
-		ctsMetric = abs(autoCorr);
-		estCTO = i;
-	end
+	ctsMetric = abs(autoCorr);
+	estCTO = i; % номер отсчёта
 
 	ctsMetricArray(i - startCTSSample + 1) = abs(autoCorr); % for debug
 
-end
+	% Последующие итерации (рекурсивный алгоритм)
+	for i = startCTSSample + 1 : startCTSSample + segmentCTSLen - 1
 
-if strcmp(cts_graph_mode, 'display')
-	Graph_CoarseTimeSynch(ctsMetricArray, estCTO, startCTSSample, 1);
-end
-clear ctsMetricArray;
+		autoCorr = autoCorr + ...
+				   rxSig(i - 1 + L_cts) * rxSig(i - 1 + L_cts + D_cts)' - ...
+				   rxSig(i - 1) * rxSig(i - 1 + D_cts)';
 
+		% Метрика (максимум модуля автокорреляции НА заданном отрезке)
+		if abs(autoCorr) > ctsMetric
+			ctsMetric = abs(autoCorr);
+			estCTO = i;
+		end
 
-%% Fine Freq Synch
-startFFSSample = estCTO + startFFSSampleOffset; % сдвиг от CTS, чтобы точно были только отсчёты STS
+		ctsMetricArray(i - startCTSSample + 1) = abs(autoCorr); % for debug
 
-autoCorr = rxSig(startFFSSample         : startFFSSample + L_ffs - 1) * ...
-		   rxSig(startFFSSample + D_ffs : startFFSSample + L_ffs + D_ffs - 1)';
-
-angl = angle(autoCorr);
-estFFO = N_802_11a_prmbpl_subcarrier / (2 * pi * D_ffs) * angl;
-
-
-%% Fine Time Synch
-startFTSSample = estCTO + startFTSSampleOffset;
-
-ftsMetricArray = zeros(1, segmentFTSLen); % for debug
-
-% Компенсируем FFO (так быстрее получается)
-% Обратить ВНИМАНИЕ на "-" в экспоненте; он нужен т.к. потом etalonSig сопрягаем
-etalonSig = etalonSig .* ...
-	exp( -1i * 2 * pi * estFFO * (1 : length(etalonSig)) / N_802_11a_prmbpl_subcarrier ); 
-
-ftsMetric = 0; estFTO = 0;
-for i = startFTSSample : startFTSSample + segmentFTSLen - 1
-
-	crossCorr = rxSig(i + 0 : i + length(etalonSig) - 1) * etalonSig';
-
-	% Метрика (максимум модуля взаимной корреляции НА заданном отрезке)
-	if abs(crossCorr) > ftsMetric
-		ftsMetric = abs(crossCorr);
-		estFTO = i;
 	end
 
-	ftsMetricArray(i - startFTSSample + 1) = abs(crossCorr); % for debug
+	if strcmp(cts_graph_mode, 'display')
+		Graph_CoarseTimeSynch(ctsMetricArray, estCTO, startCTSSample, 1);
+	end
+	clear ctsMetricArray;
+
+
+	%% Fine Freq Synch
+	startFFSSample = estCTO + startFFSSampleOffset; % сдвиг от CTS, чтобы точно были только отсчёты STS
+
+	autoCorr = rxSig(startFFSSample         : startFFSSample + L_ffs - 1) * ...
+			   rxSig(startFFSSample + D_ffs : startFFSSample + L_ffs + D_ffs - 1)';
+
+	angl = angle(autoCorr);
+	estFFO = N_802_11a_prmbpl_subcarrier / (2 * pi * D_ffs) * angl;
+
+
+	%% Fine Time Synch
+	startFTSSample = estCTO + startFTSSampleOffset;
+
+	ftsMetricArray = zeros(1, segmentFTSLen); % for debug
+
+	% Компенсируем FFO (так быстрее получается)
+	% Обратить ВНИМАНИЕ на "-" в экспоненте; он нужен т.к. потом etalonSig сопрягаем
+	etalonSig = etalonSig .* ...
+		exp( -1i * 2 * pi * estFFO * (1 : length(etalonSig)) / N_802_11a_prmbpl_subcarrier ); 
+
+	ftsMetric = 0; estFTO = 0;
+	for i = startFTSSample : startFTSSample + segmentFTSLen - 1
+
+		crossCorr = rxSig(i + 0 : i + length(etalonSig) - 1) * etalonSig';
+
+		% Метрика (максимум модуля взаимной корреляции НА заданном отрезке)
+		if abs(crossCorr) > ftsMetric
+			ftsMetric = abs(crossCorr);
+			estFTO = i;
+		end
+
+		ftsMetricArray(i - startFTSSample + 1) = abs(crossCorr); % for debug
+
+	end
+
+	if strcmp(fts_graph_mode, 'display')
+		Graph_FineTimeSynch(ftsMetricArray, estFTO, startFTSSample, 1);
+	end
+	clear ftsMetricArray;
+
+
+	%% Компенсация частотной отстройки по ранее полученной оценке
+	hdr_len = (sym_ifft_size + hdr_len_cp) * hdr_n_sym; % длина заголовка
+	no_len  = sym_ifft_size + hdr_len_cp; % ofdm-символ с порядковым номером пакета
+	pld_len = (sym_len + pld_len_cp) * pld_n_sym; % длина полезной нагрузки
+
+	% Выделяем пакет (только Заголовок + OFDM-символ + Полезная нагрузка, без 802.11a преабмулы)
+	rxPacket = rxSig(estFTO + 128 : estFTO + 128 + hdr_len + no_len + pld_len - 1);
+
+	% Компенсируем Freq Offset
+% 	rxPacket = rxPacket .* exp( 1i * 2 * pi * estFFO * (1 : length(rxPacket)) / N_802_11a_prmbpl_subcarrier );
+
+	%% Оценка канала и остаточной частотной отстройки по OFDM-символам, следующим за преамбулой (заголовку)
+	% Выделяем Заголовок
+	rxHdr = rxPacket(1 : hdr_len);
+	rxHdr = reshape(rxHdr, sym_ifft_size + hdr_len_cp, hdr_n_sym); % Упаковали в 2d массив для удобной дальнейшей обработки
+	rxHdr = sefdm_del_cp(rxHdr, hdr_len_cp); % Убрали CP
+	rxHdr = sefdm_FFT(rxHdr, 'ofdm');
+	channel_freq_response = sefdm_estimate_channel(rxHdr);
+
+	scatterplot( reshape(sefdm_allocate_subcarriers(rxHdr , 'rx'), 1, []) );
+	grid on;
+	title('Header: OFDM-syms before Equalaizer');
+	rxHdr = sefdm_equalizer(rxHdr, channel_freq_response);
+	scatterplot( reshape(sefdm_allocate_subcarriers(rxHdr , 'rx'), 1, []) );
+	grid on;
+	title('Header: OFDM-syms after Equalaizer');
+
+	[fi0, dfi, symNo] = sefdm_estimate_residual_freq_offset(rxHdr);
+
+
+	%% Выделяем OFDM-символ с порядковым номером пакета
+	rxNo = rxPacket(1 + hdr_len : 1 + hdr_len + no_len - 1);
+	rxNo = rxNo.'; % сделали столбец
+	rxNo = sefdm_del_cp(rxNo, hdr_len_cp); % Убрали CP
+	rxNo = sefdm_FFT(rxNo, 'ofdm');
+	rxNo = sefdm_equalizer(rxNo, channel_freq_response); % Компенсация влияния канала
+	% scatterplot(rxNo); grid on; title('OFDM-sym with packet No after Equalazier');
+
+	[rxNo, symNo] = sefdm_compensate_residual_freq_offset(rxNo, fi0, dfi, symNo);
+	% scatterplot( reshape(sefdm_allocate_subcarriers(rxNo , 'rx'), 1, []) );
+	% grid on;
+	% title('OFDM-sym with packet No after Equalazier and Residual Freq Offset Compensation');
+
+
+	%% Демодулируем SEFDM Полезную нагрузку
+	rxPld = rxPacket(1 + hdr_len + no_len : 1 + hdr_len + no_len + pld_len - 1);
+	rxPld = reshape(rxPld, sym_len + pld_len_cp, pld_n_sym); % Упаковали в 2d массив для удобной дальнейшей обработки
+	rxPld = sefdm_del_cp(rxPld, pld_len_cp); % Убрали CP
+
+	R = sefdm_FFT(rxPld, 'sefdm');
+	scatterplot( reshape(sefdm_allocate_subcarriers(R , 'rx'), 1, []) );
+	grid on;
+	title('Payload: SEFDM-syms before Equalaizer/RFOC/Detection');
+
+	R = sefdm_equalizer(R, channel_freq_response);
+	scatterplot( reshape(sefdm_allocate_subcarriers(R , 'rx'), 1, []) );
+	grid on;
+	title('Payload: SEFDM-syms after Equalaizer, before RFOC/Detection');
+
+	[R, symNo] = sefdm_compensate_residual_freq_offset(R, fi0, dfi, symNo);
+	scatterplot( reshape(sefdm_allocate_subcarriers(R , 'rx'), 1, []) );
+	grid on;
+	title('Payload: SEFDM-syms after Equalaizer/RFOC, before Detection');
+
+	rx_modulation_sym = ID(R);
+	scatterplot( reshape(sefdm_allocate_subcarriers(rx_modulation_sym , 'rx'), 1, []) );
+	grid on;
+	title('Payload: SEFDM-syms after Equalaizer/RFOC/Detection');
+	
+	pause;
+	close all;
 
 end
-
-if strcmp(fts_graph_mode, 'display')
-	Graph_FineTimeSynch(ftsMetricArray, estFTO, startFTSSample, 1);
-end
-clear ftsMetricArray;
-
-
-%% Компенсация частотной отстройки по ранее полученной оценке
-hdr_len = (sym_ifft_size + hdr_len_cp) * hdr_n_sym; % длина заголовка
-no_len  = sym_ifft_size + hdr_len_cp; % ofdm-символ с порядковым номером пакета
-pld_len = (sym_len + pld_len_cp) * pld_n_sym; % длина полезной нагрузки
-
-% Выделяем пакет (только Заголовок + OFDM-символ + Полезная нагрузка, без 802.11a преабмулы)
-rxPacket = rxSig(estFTO + 128 : estFTO + 128 + hdr_len + no_len + pld_len - 1);
-
-% Компенсируем Freq Offset
-rxPacket = rxPacket .* exp( 1i * 2 * pi * estFFO * (1 : length(rxPacket)) / N_802_11a_prmbpl_subcarrier );
-
-
-%% Оценка канала и остаточной частотной отстройки по OFDM-символам, следующим за преамбулой (заголовку)
-% Выделяем Заголовок
-rxHdr = rxPacket(1 : hdr_len);
-rxHdr = reshape(rxHdr, sym_ifft_size + hdr_len_cp, hdr_n_sym); % Упаковали в 2d массив для удобной дальнейшей обработки
-rxHdr = sefdm_del_cp(rxHdr, hdr_len_cp); % Убрали CP
-rxHdr = sefdm_FFT(rxHdr, 'ofdm');
-channel_freq_response = sefdm_estimate_channel(rxHdr);
-
-% scatterplot( reshape(sefdm_allocate_subcarriers(rxHdr , 'rx'), 1, []) );
-% grid on;
-% title('Header: OFDM-syms before Equalaizer');
-rxHdr = sefdm_equalizer(rxHdr, channel_freq_response);
-% scatterplot( reshape(sefdm_allocate_subcarriers(rxHdr , 'rx'), 1, []) );
-% grid on;
-% title('Header: OFDM-syms after Equalaizer');
-
-[fi0, dfi, symNo] = sefdm_estimate_residual_freq_offset(rxHdr);
-
-
-%% Выделяем OFDM-символ с порядковым номером пакета
-rxNo = rxPacket(1 + hdr_len : 1 + hdr_len + no_len - 1);
-rxNo = rxNo.'; % сделали столбец
-rxNo = sefdm_del_cp(rxNo, hdr_len_cp); % Убрали CP
-rxNo = sefdm_FFT(rxNo, 'ofdm');
-rxNo = sefdm_equalizer(rxNo, channel_freq_response); % Компенсация влияния канала
-% scatterplot(rxNo); grid on; title('OFDM-sym with packet No after Equalazier');
-
-[rxNo, symNo] = sefdm_compensate_residual_freq_offset(rxNo, fi0, dfi, symNo);
-% scatterplot( reshape(sefdm_allocate_subcarriers(rxNo , 'rx'), 1, []) );
-% grid on;
-% title('OFDM-sym with packet No after Equalazier and Residual Freq Offset Compensation');
-
-
-%% Демодулируем SEFDM Полезную нагрузку
-rxPld = rxPacket(1 + hdr_len + no_len : 1 + hdr_len + no_len + pld_len - 1);
-rxPld = reshape(rxPld, sym_len + pld_len_cp, pld_n_sym); % Упаковали в 2d массив для удобной дальнейшей обработки
-rxPld = sefdm_del_cp(rxPld, pld_len_cp); % Убрали CP
-
-R = sefdm_FFT(rxPld, 'sefdm');
-scatterplot( reshape(sefdm_allocate_subcarriers(R , 'rx'), 1, []) );
-grid on;
-title('Payload: SEFDM-syms before Equalaizer/RFOC/Detection');
-
-R = sefdm_equalizer(R, channel_freq_response);
-scatterplot( reshape(sefdm_allocate_subcarriers(R , 'rx'), 1, []) );
-grid on;
-title('Payload: SEFDM-syms after Equalaizer, before RFOC/Detection');
-
-[R, symNo] = sefdm_compensate_residual_freq_offset(R, fi0, dfi, symNo);
-scatterplot( reshape(sefdm_allocate_subcarriers(R , 'rx'), 1, []) );
-grid on;
-title('Payload: SEFDM-syms after Equalaizer/RFOC, before Detection');
-
-rx_modulation_sym = ID(R);
-scatterplot( reshape(sefdm_allocate_subcarriers(rx_modulation_sym , 'rx'), 1, []) );
-grid on;
-title('Payload: SEFDM-syms after Equalaizer/RFOC/Detection');
 
 
