@@ -278,8 +278,10 @@ namespace gr {
 
           std::cout << "we get payload len: " << in_len - (fts_est + 64 + 64) <<
               "  etalon payload len " << d_packet_len - 320 << std::endl;
-          throw std::runtime_error( "fts_est is very bad --> will be array array overflow" );
-
+//          throw std::runtime_error( "fts_est is very bad --> will be array array overflow" );
+          std::cout << "fts_est is very bad --> will be array array overflow" << std::endl;
+          std::cout << "SKIP PACKET" << std::endl;
+          return;
           // СДЕЛАТЬ ОТКИДЫВАНИЕ ПАКЕТА, А НЕ ЗАВЕРШЕНИЕ РАБОТЫ БЛОКА
         }
 
