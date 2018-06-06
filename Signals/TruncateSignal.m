@@ -6,15 +6,16 @@
 %
 clear;
 
-filename = 'rx_randi_20ofdm_20000pckt_15.dat';
-firstComplexSampleNo = uint64( 1 * 10^7 );
-endComplexSampleNo   = uint64( 5.42 * 10^7 );
+firstComplexSampleNo = uint64( 1.685 * 10^7 );
+endComplexSampleNo   = uint64( 1.6876 * 10^7 );
 envelope_graph = 'display'; % 'display' or 'no_display'
 
-filename_original = [ './RxBaseband_ComplexFloat32_bin/', ...
-                      filename ];
-filename_result   = [ './RxBaseband_Truncate_ComlexFloat32_bin/', ...
-                      [filename(1:3), 'tr_', filename(4 : end)] ];
+filename_original = ...
+	[ '/home/ivan/Documents/Signals/RxBaseband_ComplexFloat32_bin/', ...
+	  'rx_randi_20ofdm_13.dat' ];
+filename_result   = ...
+	[ '/home/ivan/Documents/Signals/RxBaseband_ComplexFloat32_bin/several_packets/', ...
+	  'tr_rx_randi_20ofdm_13.dat' ];
 
 % filename_result   = filename_original;
 
