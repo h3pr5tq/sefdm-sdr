@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 ##################################################
 # GNU Radio Python Flow Graph
-# Title: Sefdm Test
-# Generated: Thu May 17 17:22:22 2018
+# Title: SEFDM Receiver
+# Generated: Thu May 17 22:58:05 2018
 ##################################################
 
 if __name__ == '__main__':
@@ -17,6 +17,7 @@ if __name__ == '__main__':
             print "Warning: failed to XInitThreads()"
 
 from PyQt4 import Qt
+from PyQt4.QtCore import QObject, pyqtSlot
 from gnuradio import blocks
 from gnuradio import eng_notation
 from gnuradio import filter
@@ -24,6 +25,7 @@ from gnuradio import gr
 from gnuradio import qtgui
 from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
+from gnuradio.qtgui import Range, RangeWidget
 from optparse import OptionParser
 import sefdm
 import sip
@@ -33,9 +35,9 @@ import sys
 class SEFDM_Test(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "Sefdm Test")
+        gr.top_block.__init__(self, "SEFDM Receiver")
         Qt.QWidget.__init__(self)
-        self.setWindowTitle("Sefdm Test")
+        self.setWindowTitle("SEFDM Receiver")
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
         except:
@@ -68,13 +70,30 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         self.sym_len_right_gi = sym_len_right_gi = 2
         self.sym_len_left_gi = sym_len_left_gi = 3
         self.radio_samp_rate = radio_samp_rate = 4e6
+        self.radio_if_gain = radio_if_gain = 40
         self.radio_carrier_freq = radio_carrier_freq = 2290e6
-        self.qtTimeSink_num_point = qtTimeSink_num_point = 29500
+        self.radio_bb_gain = radio_bb_gain = 38
+        self.qtTimeSink_num_point = qtTimeSink_num_point = 10000
         self.prmbl_hdr_no_payload_len = prmbl_hdr_no_payload_len = 320 + hdr_n_sym * (sym_fft_size + hdr_len_cp) + (sym_fft_size + hdr_len_cp) + pld_n_sym * (sym_sefdm_len+ pld_len_cp)
 
         ##################################################
         # Blocks
         ##################################################
+        self._radio_samp_rate_options = (4e6, 8e6, 10e6, 16e6, 20e6, )
+        self._radio_samp_rate_labels = ('4 MHz', '8 MHz', '10 MHz', '16 MHz', '20 MHz', )
+        self._radio_samp_rate_tool_bar = Qt.QToolBar(self)
+        self._radio_samp_rate_tool_bar.addWidget(Qt.QLabel('Sample Rate'+": "))
+        self._radio_samp_rate_combo_box = Qt.QComboBox()
+        self._radio_samp_rate_tool_bar.addWidget(self._radio_samp_rate_combo_box)
+        for label in self._radio_samp_rate_labels: self._radio_samp_rate_combo_box.addItem(label)
+        self._radio_samp_rate_callback = lambda i: Qt.QMetaObject.invokeMethod(self._radio_samp_rate_combo_box, "setCurrentIndex", Qt.Q_ARG("int", self._radio_samp_rate_options.index(i)))
+        self._radio_samp_rate_callback(self.radio_samp_rate)
+        self._radio_samp_rate_combo_box.currentIndexChanged.connect(
+        	lambda i: self.set_radio_samp_rate(self._radio_samp_rate_options[i]))
+        self.top_grid_layout.addWidget(self._radio_samp_rate_tool_bar, 0, 1, 1, 1)
+        self._radio_carrier_freq_range = Range(10e6, 2750e6, 1e6, 2290e6, 200)
+        self._radio_carrier_freq_win = RangeWidget(self._radio_carrier_freq_range, self.set_radio_carrier_freq, 'Carrier Frequence', "counter_slider", float)
+        self.top_grid_layout.addWidget(self._radio_carrier_freq_win, 0, 0, 1, 1)
         self.sefdm_mf_demodulator_0 = sefdm.mf_demodulator(pld_n_sym,
                                      sym_fft_size, sym_sefdm_len, sym_len_right_gi, sym_len_left_gi,
                                      True, True)
@@ -92,10 +111,16 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
                                              pld_n_sym, pld_len_cp,
                                              sym_fft_size, sym_sefdm_len, sym_len_right_gi, sym_len_left_gi)
         self.sefdm_extract_packets_from_stream_0 = sefdm.extract_packets_from_stream("packet_len")
+        self._radio_if_gain_range = Range(0, 40, 8, 40, 200)
+        self._radio_if_gain_win = RangeWidget(self._radio_if_gain_range, self.set_radio_if_gain, 'RX LNA (IF) gain', "counter", float)
+        self.top_layout.addWidget(self._radio_if_gain_win)
+        self._radio_bb_gain_range = Range(0, 62, 2, 38, 200)
+        self._radio_bb_gain_win = RangeWidget(self._radio_bb_gain_range, self.set_radio_bb_gain, 'RX VGA (baseband) gain', "counter", float)
+        self.top_layout.addWidget(self._radio_bb_gain_win)
         self.qtgui_time_sink_x_1 = qtgui.time_sink_f(
         	qtTimeSink_num_point, #size
         	radio_samp_rate, #samp_rate
-        	"", #name
+        	"Packet Detection Metric", #name
         	1 #number of inputs
         )
         self.qtgui_time_sink_x_1.set_update_time(0.10)
@@ -110,7 +135,7 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_1.enable_axis_labels(True)
         self.qtgui_time_sink_x_1.enable_control_panel(False)
         
-        if not True:
+        if not False:
           self.qtgui_time_sink_x_1.disable_legend()
         
         labels = ['', '', '', '', '',
@@ -138,11 +163,11 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
             self.qtgui_time_sink_x_1.set_line_alpha(i, alphas[i])
         
         self._qtgui_time_sink_x_1_win = sip.wrapinstance(self.qtgui_time_sink_x_1.pyqwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_time_sink_x_1_win)
+        self.top_grid_layout.addWidget(self._qtgui_time_sink_x_1_win, 2, 0, 1, 2)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_c(
         	qtTimeSink_num_point, #size
         	radio_samp_rate, #samp_rate
-        	"", #name
+        	"Oscillogram", #name
         	1 #number of inputs
         )
         self.qtgui_time_sink_x_0.set_update_time(0.10)
@@ -150,7 +175,7 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         
         self.qtgui_time_sink_x_0.set_y_label('Amplitude', "")
         
-        self.qtgui_time_sink_x_0.enable_tags(-1, True)
+        self.qtgui_time_sink_x_0.enable_tags(-1, False)
         self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
         self.qtgui_time_sink_x_0.enable_autoscale(False)
         self.qtgui_time_sink_x_0.enable_grid(True)
@@ -188,10 +213,53 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
             self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
         
         self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
+        self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_win, 1, 0, 1, 1)
+        self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
+        	1024, #size
+        	firdes.WIN_BLACKMAN_hARRIS, #wintype
+        	radio_carrier_freq, #fc
+        	radio_samp_rate, #bw
+        	"Power Spectral Density", #name
+        	1 #number of inputs
+        )
+        self.qtgui_freq_sink_x_0.set_update_time(0.10)
+        self.qtgui_freq_sink_x_0.set_y_axis(-140, 10)
+        self.qtgui_freq_sink_x_0.set_y_label('Relative Gain', 'dB')
+        self.qtgui_freq_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, 0.0, 0, "")
+        self.qtgui_freq_sink_x_0.enable_autoscale(False)
+        self.qtgui_freq_sink_x_0.enable_grid(True)
+        self.qtgui_freq_sink_x_0.set_fft_average(0.2)
+        self.qtgui_freq_sink_x_0.enable_axis_labels(True)
+        self.qtgui_freq_sink_x_0.enable_control_panel(False)
+        
+        if not False:
+          self.qtgui_freq_sink_x_0.disable_legend()
+        
+        if "complex" == "float" or "complex" == "msg_float":
+          self.qtgui_freq_sink_x_0.set_plot_pos_half(not True)
+        
+        labels = ['', '', '', '', '',
+                  '', '', '', '', '']
+        widths = [1, 1, 1, 1, 1,
+                  1, 1, 1, 1, 1]
+        colors = ["blue", "red", "green", "black", "cyan",
+                  "magenta", "yellow", "dark red", "dark green", "dark blue"]
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+                  1.0, 1.0, 1.0, 1.0, 1.0]
+        for i in xrange(1):
+            if len(labels[i]) == 0:
+                self.qtgui_freq_sink_x_0.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_freq_sink_x_0.set_line_label(i, labels[i])
+            self.qtgui_freq_sink_x_0.set_line_width(i, widths[i])
+            self.qtgui_freq_sink_x_0.set_line_color(i, colors[i])
+            self.qtgui_freq_sink_x_0.set_line_alpha(i, alphas[i])
+        
+        self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.pyqwidget(), Qt.QWidget)
+        self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win, 1, 1, 1, 1)
         self.qtgui_const_sink_x_0_1 = qtgui.const_sink_c(
         	1024, #size
-        	"", #name
+        	"After Equalaizer / Phase Freq Comp / ID Detector", #name
         	0 #number of inputs
         )
         self.qtgui_const_sink_x_0_1.set_update_time(0.00010)
@@ -202,7 +270,7 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         self.qtgui_const_sink_x_0_1.enable_grid(True)
         self.qtgui_const_sink_x_0_1.enable_axis_labels(True)
         
-        if not True:
+        if not False:
           self.qtgui_const_sink_x_0_1.disable_legend()
         
         labels = ['', '', '', '', '',
@@ -229,10 +297,10 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
             self.qtgui_const_sink_x_0_1.set_line_alpha(i, alphas[i])
         
         self._qtgui_const_sink_x_0_1_win = sip.wrapinstance(self.qtgui_const_sink_x_0_1.pyqwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_const_sink_x_0_1_win)
+        self.top_grid_layout.addWidget(self._qtgui_const_sink_x_0_1_win, 3, 1, 1, 1)
         self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
         	1024, #size
-        	"", #name
+        	"After Equalaizer / Phase Freq Comp", #name
         	0 #number of inputs
         )
         self.qtgui_const_sink_x_0.set_update_time(0.00010)
@@ -243,7 +311,7 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         self.qtgui_const_sink_x_0.enable_grid(True)
         self.qtgui_const_sink_x_0.enable_axis_labels(True)
         
-        if not True:
+        if not False:
           self.qtgui_const_sink_x_0.disable_legend()
         
         labels = ['', '', '', '', '',
@@ -270,7 +338,7 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
             self.qtgui_const_sink_x_0.set_line_alpha(i, alphas[i])
         
         self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.pyqwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_const_sink_x_0_win)
+        self.top_grid_layout.addWidget(self._qtgui_const_sink_x_0_win, 3, 0, 1, 1)
         self.fir_filter_xxx_0 = filter.fir_filter_ccf(1, ([-0.0690, -0.2497, 0.6374, -0.2497, -0.0690]))
         self.fir_filter_xxx_0.declare_sample_delay(0)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, radio_samp_rate,True)
@@ -291,6 +359,7 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_throttle_0, 0), (self.sefdm_ieee_802_11a_preamble_detection_0, 0))    
         self.connect((self.fir_filter_xxx_0, 0), (self.sefdm_ieee_802_11a_preamble_detection_0, 1))    
         self.connect((self.sefdm_extract_packets_from_stream_0, 0), (self.blocks_tagged_stream_to_pdu_0, 0))    
+        self.connect((self.sefdm_ieee_802_11a_preamble_detection_0, 0), (self.qtgui_freq_sink_x_0, 0))    
         self.connect((self.sefdm_ieee_802_11a_preamble_detection_0, 0), (self.qtgui_time_sink_x_0, 0))    
         self.connect((self.sefdm_ieee_802_11a_preamble_detection_0, 1), (self.qtgui_time_sink_x_1, 0))    
         self.connect((self.sefdm_ieee_802_11a_preamble_detection_0, 0), (self.sefdm_extract_packets_from_stream_0, 0))    
@@ -365,15 +434,30 @@ class SEFDM_Test(gr.top_block, Qt.QWidget):
 
     def set_radio_samp_rate(self, radio_samp_rate):
         self.radio_samp_rate = radio_samp_rate
+        self._radio_samp_rate_callback(self.radio_samp_rate)
         self.qtgui_time_sink_x_1.set_samp_rate(self.radio_samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.radio_samp_rate)
+        self.qtgui_freq_sink_x_0.set_frequency_range(self.radio_carrier_freq, self.radio_samp_rate)
         self.blocks_throttle_0.set_sample_rate(self.radio_samp_rate)
+
+    def get_radio_if_gain(self):
+        return self.radio_if_gain
+
+    def set_radio_if_gain(self, radio_if_gain):
+        self.radio_if_gain = radio_if_gain
 
     def get_radio_carrier_freq(self):
         return self.radio_carrier_freq
 
     def set_radio_carrier_freq(self, radio_carrier_freq):
         self.radio_carrier_freq = radio_carrier_freq
+        self.qtgui_freq_sink_x_0.set_frequency_range(self.radio_carrier_freq, self.radio_samp_rate)
+
+    def get_radio_bb_gain(self):
+        return self.radio_bb_gain
+
+    def set_radio_bb_gain(self, radio_bb_gain):
+        self.radio_bb_gain = radio_bb_gain
 
     def get_qtTimeSink_num_point(self):
         return self.qtTimeSink_num_point
